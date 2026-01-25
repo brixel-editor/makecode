@@ -4,7 +4,7 @@
  */
 
 //% weight=1090 color=#FAC907 icon="\uf108" block="02. Adv Displays"
-//% groups="['OLED', 'HT16K33', 'MAX7219', '74HC595', 'TFT']"
+//% groups="['OLED', '도트매트릭스(I2C-HT16K33)', '도트매트릭스(SPI-MAX7219)', 'LED바74HC595', 'TFT LCD']"
 namespace AdvDisplays {
 
 

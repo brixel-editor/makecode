@@ -4,7 +4,7 @@
  */
 
 //% weight=1100 color=#FAC907 icon="\uf108" block="01. Displays.v02"
-//% groups="['LCD', 'TM1637', 'NeoPixel']"
+//% groups="['LCD', '숫자표시장치(TM1637)', '네오픽셀(NeoPixel)']"
 namespace Displays01 {
 
 
@@ -25,7 +25,7 @@ namespace Displays01 {
     let _lcdBacklight: number = 0x08
 
     //% block="LCD init address %addr type %type"
-    //% addr.defl=0x27
+    //% addr.defl=0x20
     //% group="LCD" weight=100
     export function lcdInit(addr: number, type: LCDType): void {
         _lcdAddr = addr

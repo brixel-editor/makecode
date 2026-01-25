@@ -4,7 +4,7 @@
  */
 
 //% weight=1070 color=#4D68EC icon="\uf0e7" block="04. Adv Sensors"
-//% groups="['Time', 'BMP280', 'BME280', 'MPU6050', 'ADXL345', 'TCS34725', 'APDS9960', 'MAX30102', 'Fingerprint', 'INA219', 'ACS712', 'Voltage Sensor', 'Other']"
+//% groups="['실시간(RTC)', '대기압(BMP280)', '대기압(BME280)', '6축 가속도(MPU6050)', '3축 가속도(ADXL345)', '색상감지(TCS34725)', '제스처(APDS9960)', '심박(MAX30102)', 'Fingerprint', '전류/전압/전력 측정(INA219)', '전류 센서(ACS712)', '전압센서(Voltage Sensor)', 'Other']"
 namespace AdvSensors {
 
 
