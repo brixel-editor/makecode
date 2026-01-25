@@ -18,8 +18,8 @@
         "08_wifi.ts",
         "09_usb_serial.ts",
         "README.md",
-        "_locales/en/strings.json",
-        "_locales/ko/strings.json"
+        "_locales/en/brixel-ext-strings.json",
+        "_locales/ko/brixel-ext-strings.json"
     ],
     "testFiles": [],
     "supportedTargets": [

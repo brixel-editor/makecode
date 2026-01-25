@@ -782,8 +782,7 @@ namespace AdvDisplays {
         pins.i2cWriteBuffer(_ht16k33Addr, buf)
     }
 
-    //% block="I2C matrix %num |screen clear"
-    //% num.defl=1
+    //% block="I2C matrix screen clear"
     //% group="HT16K33" weight=63
     export function ht16k33Clear(): void {
         for (let i = 0; i < 16; i++) {
@@ -792,8 +791,7 @@ namespace AdvDisplays {
         ht16k33Refresh(1)
     }
 
-    //% block="I2C matrix %num brightness(0-15) %brightness"
-    //% num.defl=1
+    //% block="I2C matrix brightness(0-15) %brightness"
     //% brightness.defl=15 brightness.min=0 brightness.max=15
     //% group="HT16K33" weight=62
     export function ht16k33SetBrightness(brightness: number): void {
@@ -801,8 +799,7 @@ namespace AdvDisplays {
         pins.i2cWriteNumber(_ht16k33Addr, 0xE0 | _ht16k33Brightness, NumberFormat.UInt8BE)
     }
 
-    //% block="I2C matrix %num blink %blink"
-    //% num.defl=1
+    //% block="I2C matrix blink %blink"
     //% blink.shadow="toggleOnOff" blink.defl=false
     //% group="HT16K33" weight=61
     export function ht16k33SetBlink(blink: boolean): void {
