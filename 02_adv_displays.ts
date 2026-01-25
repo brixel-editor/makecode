@@ -3,7 +3,7 @@
  * OLED, MAX7219, HT16K33, 74HC595, TFT (ST7735, ILI9341)
  */
 
-//% weight=1090 color=#DEB887 icon="\uf108" block="02. Adv Displays"
+//% weight=1090 color=#FAC907 icon="\uf108" block="02. Adv Displays"
 //% groups="['OLED', 'HT16K33', 'MAX7219', '74HC595', 'TFT']"
 namespace AdvDisplays {
 

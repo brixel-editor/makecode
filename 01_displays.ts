@@ -3,9 +3,9 @@
  * LCD1602, LCD2004, TM1637, NeoPixel
  */
 
-//% weight=1100 color=#DAA520 icon="\uf108" block="01. Displays"
+//% weight=1100 color=#FAC907 icon="\uf108" block="01. Displays"
 //% groups="['LCD', 'TM1637', 'NeoPixel']"
-namespace Displays01 {
+namespace Displays01.v01 {
 
 
     /********** LCD1602 디스플레이 **********/

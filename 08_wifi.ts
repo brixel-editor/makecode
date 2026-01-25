@@ -3,7 +3,7 @@
  * ESP8266, ESP32 WiFi, WebSocket
  */
 
-//% weight=1020 color=#4169E1 icon="\uf1eb" block="08. WiFi"
+//% weight=1020 color=#4285F4 icon="\uf1eb" block="08. WiFi"
 //% groups="['Settings', 'SendReceive']"
 namespace WiFi08 {
 

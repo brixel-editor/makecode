@@ -3,7 +3,7 @@
  * EEPROM, nRF24L01, LoRa, Bluetooth, GPS
  */
 
-//% weight=1040 color=#EE82EE icon="\uf1eb" block="07. Communications"
+//% weight=1040 color=#F75ACF icon="\uf1eb" block="07. Communications"
 //% groups="['Infrared', 'MFRC522', 'PN532', 'GPS', 'nRF24L01', 'LoRa']"
 namespace Communications07 {
 

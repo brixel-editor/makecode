@@ -3,7 +3,7 @@
  * Serial communication, parsing
  */
 
-//% weight=1010 color=#008080 icon="\uf287" block="09. USB Serial"
+//% weight=1010 color=#4285F4 icon="\uf287" block="09. USB Serial"
 //% groups="['Settings', 'Send', 'Receive', 'Parse (Scratch)', 'Parse (Direct)']"
 namespace USBSerial {
 

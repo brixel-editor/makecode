@@ -3,7 +3,7 @@
  * Buzzer, Speaker, Vibration Motor
  */
 
-//% weight=1050 color=#808000 icon="\uf028" block="06. Output Device"
+//% weight=1050 color=#50B91A icon="\uf028" block="06. Output Device"
 //% groups="['Buzzer', 'MP3 Player', 'SD Card', 'EEPROM', 'Microphone']"
 namespace OutputDevice {
 

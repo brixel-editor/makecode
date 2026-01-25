@@ -3,7 +3,7 @@
  * Servo, DC Motor, Stepper Motor, Relay, Solenoid
  */
 
-//% weight=1060 color=#32CD32 icon="\uf013" block="05. Actuators"
+//% weight=1060 color=#50B91A icon="\uf013" block="05. Actuators"
 //% groups="['Servo Motors', 'Stepper Motors', 'L298N', 'L293D', 'TB6612FNG', 'DRV8833', 'Relays', 'Solenoid', 'Fan', 'Pump']"
 namespace Actuators05 {
 

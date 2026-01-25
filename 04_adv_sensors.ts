@@ -3,7 +3,7 @@
  * HX711, Rotary Encoder, Joystick, Keypad, Other Sensors
  */
 
-//% weight=1070 color=#1E90FF icon="\uf0e7" block="04. Adv Sensors"
+//% weight=1070 color=#4D68EC icon="\uf0e7" block="04. Adv Sensors"
 //% groups="['Time', 'BMP280', 'BME280', 'MPU6050', 'ADXL345', 'TCS34725', 'APDS9960', 'MAX30102', 'Fingerprint', 'INA219', 'ACS712', 'Voltage Sensor', 'Other']"
 namespace AdvSensors {
 
@@ -101,30 +101,30 @@ namespace AdvSensors {
     //% group="APDS9960" weight=90
     export function apds9960Setup(): void {
         _apds9960Addr = 0x39
-        
+
         // Power ON
         pins.i2cWriteNumber(_apds9960Addr, 0x8001, NumberFormat.UInt16BE)
         basic.pause(10)
-        
+
         // ADC 통합 시간 설정
         pins.i2cWriteNumber(_apds9960Addr, 0x81F6, NumberFormat.UInt16BE)
-        
+
         // 대기 시간 설정
         pins.i2cWriteNumber(_apds9960Addr, 0x83FF, NumberFormat.UInt16BE)
-        
+
         // 근접 펄스 수 설정
         pins.i2cWriteNumber(_apds9960Addr, 0x8E87, NumberFormat.UInt16BE)
-        
+
         // 제스처 설정
         pins.i2cWriteNumber(_apds9960Addr, 0xA340, NumberFormat.UInt16BE)
         pins.i2cWriteNumber(_apds9960Addr, 0xA41E, NumberFormat.UInt16BE)
         pins.i2cWriteNumber(_apds9960Addr, 0xA528, NumberFormat.UInt16BE)
         pins.i2cWriteNumber(_apds9960Addr, 0xA6C8, NumberFormat.UInt16BE)
-        
+
         // 게인 설정
         pins.i2cWriteNumber(_apds9960Addr, 0x8F44, NumberFormat.UInt16BE)
         pins.i2cWriteNumber(_apds9960Addr, 0xA920, NumberFormat.UInt16BE)
-        
+
         basic.pause(10)
     }
 
@@ -138,10 +138,10 @@ namespace AdvSensors {
         // Enable 레지스터 읽기
         pins.i2cWriteNumber(_apds9960Addr, 0x80, NumberFormat.UInt8BE)
         let enableReg = pins.i2cReadNumber(_apds9960Addr, NumberFormat.UInt8BE)
-        
+
         let bit = 0
         let intBit = 0
-        
+
         if (sensor == APDS9960SensorType.Ambient) {
             bit = 0x02  // AEN
             intBit = 0x10  // AIEN
@@ -155,19 +155,19 @@ namespace AdvSensors {
             bit = 0x02  // AEN (RGB도 ALS 사용)
             intBit = 0x10
         }
-        
+
         if (enable == APDS9960Enable.Enable) {
             enableReg |= bit | 0x01  // PON 포함
         } else {
             enableReg &= ~bit
         }
-        
+
         if (interrupt == APDS9960Interrupt.Enable) {
             enableReg |= intBit
         } else {
             enableReg &= ~intBit
         }
-        
+
         pins.i2cWriteNumber(_apds9960Addr, (0x80 << 8) | enableReg, NumberFormat.UInt16BE)
     }
 
@@ -179,7 +179,7 @@ namespace AdvSensors {
         pins.i2cWriteNumber(_apds9960Addr, 0x94, NumberFormat.UInt8BE)
         let buf = pins.i2cReadBuffer(_apds9960Addr, 2)
         _apds9960C = (buf[1] << 8) | buf[0]
-        
+
         if (atype == APDS9960AmbientType.Lux) {
             // 대략적인 Lux 변환
             return Math.round(_apds9960C / 10)
@@ -212,15 +212,15 @@ namespace AdvSensors {
         // 제스처 상태 확인
         pins.i2cWriteNumber(_apds9960Addr, 0xAF, NumberFormat.UInt8BE)
         let status = pins.i2cReadNumber(_apds9960Addr, NumberFormat.UInt8BE)
-        
+
         if (status & 0x01) {
             // 제스처 FIFO 읽기
             pins.i2cWriteNumber(_apds9960Addr, 0xFC, NumberFormat.UInt8BE)
             let buf = pins.i2cReadBuffer(_apds9960Addr, 4)
-            
+
             let ud = buf[0] - buf[1]  // Up - Down
             let lr = buf[2] - buf[3]  // Left - Right
-            
+
             if (Math.abs(ud) > Math.abs(lr)) {
                 if (ud > 20) _apds9960Gesture = APDS9960GestureKR.Up
                 else if (ud < -20) _apds9960Gesture = APDS9960GestureKR.Down
@@ -233,7 +233,7 @@ namespace AdvSensors {
         } else {
             _apds9960Gesture = APDS9960GestureKR.None
         }
-        
+
         return _apds9960Gesture == gesture
     }
 
@@ -656,7 +656,7 @@ namespace AdvSensors {
         for (let i = 0; i < samples; i++) {
             pins.i2cWriteNumber(_mpu6050Addr, 0x43, NumberFormat.UInt8BE)
             let gyroBuf = pins.i2cReadBuffer(_mpu6050Addr, 6)
-            
+
             let rawX = (gyroBuf[0] << 8) | gyroBuf[1]
             if (rawX > 32767) rawX -= 65536
             let rawY = (gyroBuf[2] << 8) | gyroBuf[3]
@@ -880,24 +880,24 @@ namespace AdvSensors {
     //% group="MAX30102" weight=35
     export function heartRateSetup(): void {
         _hrAddr = 0x57
-        
+
         // 소프트 리셋
         pins.i2cWriteNumber(_hrAddr, 0x0940, NumberFormat.UInt16BE)
         basic.pause(100)
-        
+
         // FIFO 설정 (샘플 평균 4, FIFO 롤오버 활성화)
         pins.i2cWriteNumber(_hrAddr, 0x0850, NumberFormat.UInt16BE)
-        
+
         // 모드 설정 (SpO2 모드)
         pins.i2cWriteNumber(_hrAddr, 0x0903, NumberFormat.UInt16BE)
-        
+
         // SpO2 설정 (ADC 범위 4096, 샘플 레이트 100, 펄스 폭 411us)
         pins.i2cWriteNumber(_hrAddr, 0x0A27, NumberFormat.UInt16BE)
-        
+
         // LED 전류 설정 (RED: 6.4mA, IR: 6.4mA)
         pins.i2cWriteNumber(_hrAddr, 0x0C24, NumberFormat.UInt16BE)
         pins.i2cWriteNumber(_hrAddr, 0x0D24, NumberFormat.UInt16BE)
-        
+
         _hrReady = true
         _hrBeatTimes = []
         _hrBeatCount = 0
@@ -919,15 +919,15 @@ namespace AdvSensors {
         if (!_hrFingerDetected) {
             heartRateFingerDetected()
         }
-        
+
         if (!_hrFingerDetected) {
             return 0
         }
-        
+
         // 심박 감지 알고리즘 (간소화)
         heartRateReadRaw()
         let currentTime = control.millis()
-        
+
         // IR 값의 변화로 심박 감지
         if (_hrIRLED > 50000 && _hrBeatDetected == false) {
             if (_hrLastBeat > 0) {
@@ -944,7 +944,7 @@ namespace AdvSensors {
         } else if (_hrIRLED < 45000) {
             _hrBeatDetected = false
         }
-        
+
         // 평균 심박수 계산
         if (_hrBeatTimes.length > 0) {
             let avgInterval = 0
@@ -953,12 +953,12 @@ namespace AdvSensors {
             }
             avgInterval = avgInterval / _hrBeatTimes.length
             _hrHeartRate = Math.round(60000 / avgInterval)
-            
+
             // 범위 제한
             if (_hrHeartRate < 40) _hrHeartRate = 0
             if (_hrHeartRate > 200) _hrHeartRate = 200
         }
-        
+
         return _hrHeartRate
     }
 
@@ -968,26 +968,26 @@ namespace AdvSensors {
         if (!_hrFingerDetected) {
             heartRateFingerDetected()
         }
-        
+
         if (!_hrFingerDetected) {
             return 0
         }
-        
+
         heartRateReadRaw()
-        
+
         // SpO2 계산 (간소화된 R 값 기반)
         // R = (AC_red / DC_red) / (AC_ir / DC_ir)
         // SpO2 = 110 - 25 * R (대략적인 공식)
-        
+
         if (_hrIRLED > 0 && _hrRedLED > 0) {
             let ratio = (_hrRedLED * 1.0) / (_hrIRLED * 1.0)
             _hrSpO2 = Math.round(110 - 25 * ratio)
-            
+
             // 범위 제한
             if (_hrSpO2 > 100) _hrSpO2 = 100
             if (_hrSpO2 < 80) _hrSpO2 = 0
         }
-        
+
         return _hrSpO2
     }
 
@@ -1010,14 +1010,14 @@ namespace AdvSensors {
         // 온도 측정 트리거
         pins.i2cWriteNumber(_hrAddr, 0x2101, NumberFormat.UInt16BE)
         basic.pause(50)
-        
+
         // 온도 읽기
         pins.i2cWriteNumber(_hrAddr, 0x1F, NumberFormat.UInt8BE)
         let tempInt = pins.i2cReadNumber(_hrAddr, NumberFormat.Int8BE)
-        
+
         pins.i2cWriteNumber(_hrAddr, 0x20, NumberFormat.UInt8BE)
         let tempFrac = pins.i2cReadNumber(_hrAddr, NumberFormat.UInt8BE)
-        
+
         _hrTemperature = tempInt + (tempFrac * 0.0625)
         return Math.round(_hrTemperature * 10) / 10
     }
@@ -1029,7 +1029,7 @@ namespace AdvSensors {
     //% inlineInputMode=inline
     export function heartRateSetPower(stype: HeartRateSensorType, power: HeartRatePower): void {
         let ledCurrent = 0x24  // 기본 6.4mA
-        
+
         if (power == HeartRatePower.Low) {
             ledCurrent = 0x0F  // 3.0mA
         } else if (power == HeartRatePower.Medium) {
@@ -1037,7 +1037,7 @@ namespace AdvSensors {
         } else {
             ledCurrent = 0x50  // 15.0mA
         }
-        
+
         if (stype == HeartRateSensorType.HeartRate) {
             // IR LED만 사용 (심박수 모드)
             pins.i2cWriteNumber(_hrAddr, 0x0902, NumberFormat.UInt16BE)  // HR 모드
@@ -1069,10 +1069,10 @@ namespace AdvSensors {
         // FIFO 데이터 읽기
         pins.i2cWriteNumber(_hrAddr, 0x07, NumberFormat.UInt8BE)
         let fifoData = pins.i2cReadBuffer(_hrAddr, 6)
-        
+
         // RED LED 데이터 (3바이트)
         _hrRedLED = ((fifoData[0] & 0x03) << 16) | (fifoData[1] << 8) | fifoData[2]
-        
+
         // IR LED 데이터 (3바이트)
         _hrIRLED = ((fifoData[3] & 0x03) << 16) | (fifoData[4] << 8) | fifoData[5]
     }
@@ -1173,7 +1173,7 @@ namespace AdvSensors {
     //% inlineInputMode=inline
     export function fpEnroll(step: FPEnroll, id: number): number {
         let cmd: Buffer
-        
+
         if (step == FPEnroll.GetImage) {
             // 이미지 가져오기: EF 01 FF FF FF FF 01 00 03 01 00 05
             cmd = pins.createBuffer(12)
@@ -1213,10 +1213,10 @@ namespace AdvSensors {
             cmd[13] = (sum >> 8) & 0xFF
             cmd[14] = sum & 0xFF
         }
-        
+
         serial.writeBuffer(cmd)
         basic.pause(200)
-        
+
         // 응답 읽기
         let response = serial.readBuffer(12)
         if (response.length >= 10) {
@@ -1239,14 +1239,14 @@ namespace AdvSensors {
         imgCmd[10] = 0x00; imgCmd[11] = 0x05
         serial.writeBuffer(imgCmd)
         basic.pause(200)
-        
+
         let imgResp = serial.readBuffer(12)
         if (imgResp.length < 10 || imgResp[9] != 0x00) {
             _fpStatus = imgResp.length >= 10 ? imgResp[9] : -1
             _fpFingerID = -1
             return -1
         }
-        
+
         // 이미지 변환
         let tzCmd = pins.createBuffer(13)
         tzCmd[0] = 0xEF; tzCmd[1] = 0x01
@@ -1256,14 +1256,14 @@ namespace AdvSensors {
         tzCmd[11] = 0x00; tzCmd[12] = 0x08
         serial.writeBuffer(tzCmd)
         basic.pause(200)
-        
+
         let tzResp = serial.readBuffer(12)
         if (tzResp.length < 10 || tzResp[9] != 0x00) {
             _fpStatus = tzResp.length >= 10 ? tzResp[9] : -1
             _fpFingerID = -1
             return -1
         }
-        
+
         // 검색: EF 01 FF FF FF FF 01 00 08 04 01 00 00 00 A3 [CHK]
         let searchCmd = pins.createBuffer(17)
         searchCmd[0] = 0xEF; searchCmd[1] = 0x01
@@ -1278,7 +1278,7 @@ namespace AdvSensors {
         searchCmd[16] = sum & 0xFF
         serial.writeBuffer(searchCmd)
         basic.pause(mode == FPSearchMode.Fast ? 200 : 500)
-        
+
         // 검색 결과 읽기
         let searchResp = serial.readBuffer(16)
         if (searchResp.length >= 14) {
@@ -1291,7 +1291,7 @@ namespace AdvSensors {
                 _fpConfidence = 0
             }
         }
-        
+
         return _fpFingerID
     }
 
@@ -1314,7 +1314,7 @@ namespace AdvSensors {
     //% inlineInputMode=inline
     export function fpDatabase(cmd: FPDatabase, id: number): number {
         let cmdBuf: Buffer
-        
+
         if (cmd == FPDatabase.DeleteID) {
             // ID 삭제: EF 01 FF FF FF FF 01 00 07 0C [ID_H] [ID_L] 00 01 [CHK]
             cmdBuf = pins.createBuffer(16)
@@ -1345,10 +1345,10 @@ namespace AdvSensors {
             cmdBuf[9] = 0x1D  // TemplateNum
             cmdBuf[10] = 0x00; cmdBuf[11] = 0x21
         }
-        
+
         serial.writeBuffer(cmdBuf)
         basic.pause(200)
-        
+
         let response = serial.readBuffer(14)
         if (response.length >= 10) {
             _fpStatus = response[9]
@@ -1371,7 +1371,7 @@ namespace AdvSensors {
         cmd[2] = 0xFF; cmd[3] = 0xFF; cmd[4] = 0xFF; cmd[5] = 0xFF
         cmd[6] = 0x01; cmd[7] = 0x00; cmd[8] = 0x07
         cmd[9] = 0x35  // AuraLedConfig
-        
+
         if (state == FPLED.On) {
             cmd[10] = 0x01  // 켜기
             cmd[11] = 0x00  // 속도
@@ -1388,11 +1388,11 @@ namespace AdvSensors {
             cmd[12] = 0x01  // 파란색
             cmd[13] = 0x02  // 횟수
         }
-        
+
         let sum = 0x01 + 0x00 + 0x07 + 0x35 + cmd[10] + cmd[11] + cmd[12] + cmd[13]
         cmd[14] = (sum >> 8) & 0xFF
         cmd[15] = sum & 0xFF
-        
+
         serial.writeBuffer(cmd)
         basic.pause(100)
     }
