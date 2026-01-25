@@ -1,7 +1,11 @@
 {
     "name": "brixel-ext",
     "version": "2.2.0",
-    "description": "BRIXEL Extension - 100+ devices in 9 categories",
+    "description": "BRIXEL Extension - Supports 100+ sensors, actuators, displays & communication devices",
+    "license": "MIT",
+    "author": "BRIXEL",
+    "public": true,
+    "icon": "./icon.png",
     "dependencies": {
         "core": "*",
         "microbit": "*"
@@ -18,6 +22,7 @@
         "08_wifi.ts",
         "09_usb_serial.ts",
         "README.md",
+        "icon.png",
         "_locales/en/brixel-ext-strings.json",
         "_locales/ko/brixel-ext-strings.json"
     ],
