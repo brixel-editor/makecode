@@ -1,13 +1,22 @@
 {
     "name": "brixel-ext",
-    "version": "2.0.0",
-    "description": "BRIXEL Extension - 92 devices in 6 categories",
+    "version": "2.1.0",
+    "description": "BRIXEL Extension - 92 devices in 9 categories",
     "dependencies": {
         "core": "*",
         "microbit": "*"
     },
     "files": [
         "main.ts",
+        "01_displays.ts",
+        "02_adv_displays.ts",
+        "03_sensors.ts",
+        "04_adv_sensors.ts",
+        "05_actuators.ts",
+        "06_output_device.ts",
+        "07_communications.ts",
+        "08_wifi.ts",
+        "09_usb_serial.ts",
         "README.md"
     ],
     "testFiles": [],
