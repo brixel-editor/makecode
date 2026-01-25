@@ -1,4 +1,13 @@
 {
+    "Displays01|block": "디스플레이",
+    "AdvDisplays|block": "고급 디스플레이",
+    "Sensors03|block": "센서",
+    "AdvSensors|block": "고급센서",
+    "Actuators05|block": "모터장치",
+    "OutputDevice|block": "출력장치",
+    "Communications07|block": "통신장치",
+    "WiFi08|block": "와이파이",
+    "USBSerial|block": "시리얼",
     "Sensors03.DHTType.DHT11|block": "DHT11",
     "Sensors03.DHTType.DHT22|block": "DHT22",
     "Sensors03.DHTReadType.Humidity|block": "습도(%)",
