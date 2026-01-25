@@ -1,6 +1,6 @@
 /**
  * BRIXEL Extension - MakeCode micro:bit Extension
- * Supports 92 devices in 9 categories
+ * Supports 100+ devices in 9 categories
  *
  * File Structure:
  * - 01_displays.ts      : LCD, TM1637, NeoPixel

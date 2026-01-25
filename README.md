@@ -1,6 +1,6 @@
 # BRIXEL Extension for MakeCode
 
-> 🎯 **Comprehensive MakeCode Extension** supporting **92+ devices** across **9 categories**  
+> 🎯 **Comprehensive MakeCode Extension** supporting **100+ devices** across **9 categories**  
 > 🌏 **Multi-language Support**: English (en) & Korean (ko)
 
 ## 📋 Table of Contents
@@ -18,11 +18,11 @@
 
 ## 🎯 Overview
 
-BRIXEL Extension is a comprehensive MakeCode extension for micro:bit that provides easy-to-use blocks for controlling various sensors, actuators, displays, and communication devices. With support for 92+ devices organized into 9 intuitive categories, it's perfect for education, prototyping, and IoT projects.
+BRIXEL Extension is a comprehensive MakeCode extension for micro:bit that provides easy-to-use blocks for controlling various sensors, actuators, displays, and communication devices. With support for 100+ devices organized into 9 intuitive categories, it's perfect for education, prototyping, and IoT projects.
 
 ## ✨ Features
 
-- 🔌 **92+ Device Support** - Extensive library of sensors, actuators, and displays
+- 🔌 **100+ Device Support** - Extensive library of sensors, actuators, and displays
 - 🌐 **Bilingual Interface** - Full English and Korean language support
 - 📦 **9 Organized Categories** - Easy navigation and discovery
 - 🎨 **Color-Coded Blocks** - Visual distinction between categories
