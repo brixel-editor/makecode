@@ -1,6 +1,6 @@
 {
     "name": "brixel-ext",
-    "version": "2.1.0",
+    "version": "2.2.0",
     "description": "BRIXEL Extension - 100+ devices in 9 categories",
     "dependencies": {
         "core": "*",
@@ -17,15 +17,13 @@
         "07_communications.ts",
         "08_wifi.ts",
         "09_usb_serial.ts",
-        "README.md"
+        "README.md",
+        "_locales/en/strings.json",
+        "_locales/ko/strings.json"
     ],
     "testFiles": [],
     "supportedTargets": [
         "microbit"
     ],
-    "preferredEditor": "blocksprj",
-    "additionalFiles": [
-        "_locales/ko/strings.json",
-        "_locales/en/strings.json"
-    ]
+    "preferredEditor": "blocksprj"
 }

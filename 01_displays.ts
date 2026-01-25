@@ -3,7 +3,7 @@
  * LCD1602, LCD2004, TM1637, NeoPixel
  */
 
-//% weight=1100 color=#FAC907 icon="\uf108" block="01. Displays.v01"
+//% weight=1100 color=#FAC907 icon="\uf108" block="01. Displays.v02"
 //% groups="['LCD', 'TM1637', 'NeoPixel']"
 namespace Displays01 {
 

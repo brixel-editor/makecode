@@ -1,5 +1,5 @@
 {
-    "Displays01|block": "01. 디스플레이",
+    "Displays01|block": "01. 디스플레이.v02",
     "Displays01.LCDType.LCD1602|block": "LCD1602",
     "Displays01.LCDType.LCD2004|block": "LCD2004",
     "Displays01.lcdInit|block": "LCD 초기화 주소 %addr 타입 %type",
