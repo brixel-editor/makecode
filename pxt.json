@@ -1,0 +1,18 @@
+{
+    "name": "brixel-ext",
+    "version": "2.0.0",
+    "description": "BRIXEL Extension - 92 devices in 6 categories",
+    "dependencies": {
+        "core": "*",
+        "microbit": "*"
+    },
+    "files": [
+        "main.ts",
+        "README.md"
+    ],
+    "testFiles": [],
+    "supportedTargets": [
+        "microbit"
+    ],
+    "preferredEditor": "blocksprj"
+}
