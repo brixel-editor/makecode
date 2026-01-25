@@ -1,8 +1,8 @@
 # BRIXEL Extension
 
-MakeCode micro:bit Extension - Supports 92 devices in 6 categories.
+MakeCode micro:bit Extension - Supports 100+ devices in 6 categories.
 
-## Supported Devices (92 total)
+## Supported Devices (100 total)
 
 | Category | Device Count |
 |----------|-------------|
