@@ -1,7 +1,7 @@
 {
     "name": "brixel-ext",
     "version": "2.1.0",
-    "description": "BRIXEL Extension - 92 devices in 9 categories",
+    "description": "BRIXEL Extension - 100+ devices in 9 categories",
     "dependencies": {
         "core": "*",
         "microbit": "*"
@@ -23,5 +23,9 @@
     "supportedTargets": [
         "microbit"
     ],
-    "preferredEditor": "blocksprj"
+    "preferredEditor": "blocksprj",
+    "additionalFiles": [
+        "_locales/ko/strings.json",
+        "_locales/en/strings.json"
+    ]
 }
