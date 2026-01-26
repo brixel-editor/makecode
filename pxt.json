@@ -5,10 +5,8 @@
     "license": "MIT",
     "author": "BRIXEL",
     "public": true,
-    "icon": "icon.png",
     "dependencies": {
         "core": "*",
-        "bluetooth": "*",
         "microbit": "*"
     },
     "files": [
@@ -22,7 +20,6 @@
         "07_communications.ts",
         "08_wifi.ts",
         "09_usb_serial.ts",
-        "10_bluetooth.ts",
         "README.md",
         "icon.png",
         "_locales/en/brixel-ext-strings.json",
