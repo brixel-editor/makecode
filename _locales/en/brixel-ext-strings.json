@@ -732,5 +732,13 @@
     "USBSerial.serialGetParsedCount|block": "Parsed value count",
     "USBSerial.serialGetValueFromText|block": "%index th value from (string: « %text »)",
     "USBSerial.serialGetCountFromText|block": "Parsed value count (string: « %text »)",
-    "USBSerial.serialToNumber|block": "« %text » convert to number"
+    "USBSerial.serialToNumber|block": "« %text » convert to number",
+    "CommBlue|block": "Bluetooth",
+    "CommBlue.webBLESetup|block": "Web BLE Setup Name %name",
+    "CommBlue.webBLEAvailable|block": "Is Web BLE message available?",
+    "CommBlue.webBLERead|block": "Message received via Web BLE",
+    "CommBlue.webBLEWrite|block": "Send %content via Web BLE",
+    "CommBlue.webBLEConnected|block": "Is Web BLE connected?",
+    "CommBlue.webBLEParse|block": "Parse received Web BLE data by %delimiter",
+    "CommBlue.webBLEGetValue|block": "%n -th parsed Web BLE value"
 }

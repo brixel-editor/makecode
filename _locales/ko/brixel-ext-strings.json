@@ -732,5 +732,13 @@
     "USBSerial.serialGetParsedCount|block": "파싱된 값 개수",
     "USBSerial.serialGetValueFromText|block": "%index 번째 값 (문자열: « %text »)",
     "USBSerial.serialGetCountFromText|block": "파싱된 값 개수 (문자열: « %text »)",
-    "USBSerial.serialToNumber|block": "« %text » 숫자로 변환"
+    "USBSerial.serialToNumber|block": "« %text » 숫자로 변환",
+    "CommBlue|block": "블루투스",
+    "CommBlue.webBLESetup|block": "Web BLE 설정 이름 %name",
+    "CommBlue.webBLEAvailable|block": "Web BLE 메시지 수신됨?",
+    "CommBlue.webBLERead|block": "Web BLE 수신 메시지 읽기",
+    "CommBlue.webBLEWrite|block": "Web BLE 전송 %content",
+    "CommBlue.webBLEConnected|block": "Web BLE 연결됨?",
+    "CommBlue.webBLEParse|block": "Web BLE 수신 데이터 파싱 구분자 %delimiter",
+    "CommBlue.webBLEGetValue|block": "%n 번째 파싱된 Web BLE 값"
 }
