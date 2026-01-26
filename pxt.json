@@ -5,7 +5,7 @@
     "license": "MIT",
     "author": "BRIXEL",
     "public": true,
-    "icon": "./icon.png",
+    "icon": "icon.png",
     "dependencies": {
         "core": "*",
         "microbit": "*"
