@@ -8,7 +8,6 @@
     "icon": "icon.png",
     "dependencies": {
         "core": "*",
-        "bluetooth": "*",
         "microbit": "*"
     },
     "files": [
