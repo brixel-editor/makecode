@@ -19,7 +19,7 @@ namespace Actuators05 {
     let _l298nIN4: DigitalPin = DigitalPin.P5
 
     //% block="L298N motorA pin set ENA %ena IN1 %in1 IN2 %in2"
-    //% group="L298N" weight=100
+    //% group="DC모터(L298N)" weight=100
     export function l298nSetPinsA(ena: AnalogPin, in1: DigitalPin, in2: DigitalPin): void {
         _l298nENA = ena
         _l298nIN1 = in1
@@ -27,7 +27,7 @@ namespace Actuators05 {
     }
 
     //% block="L298N motorB pin set ENB %enb IN3 %in3 IN4 %in4"
-    //% group="L298N" weight=99
+    //% group="DC모터(L298N)" weight=99
     export function l298nSetPinsB(enb: AnalogPin, in3: DigitalPin, in4: DigitalPin): void {
         _l298nENB = enb
         _l298nIN3 = in3
@@ -36,7 +36,7 @@ namespace Actuators05 {
 
     //% block="L298N motorA speed %speed"
     //% speed.min=-100 speed.max=100 speed.defl=0
-    //% group="L298N" weight=98
+    //% group="DC모터(L298N)" weight=98
     export function l298nMotorA(speed: number): void {
         let pwm = Math.abs(speed) * 10.23
         if (speed > 0) {
@@ -54,7 +54,7 @@ namespace Actuators05 {
 
     //% block="L298N motorB speed %speed"
     //% speed.min=-100 speed.max=100 speed.defl=0
-    //% group="L298N" weight=97
+    //% group="DC모터(L298N)" weight=97
     export function l298nMotorB(speed: number): void {
         let pwm = Math.abs(speed) * 10.23
         if (speed > 0) {
@@ -82,7 +82,7 @@ namespace Actuators05 {
     let _l293dIN4: DigitalPin = DigitalPin.P5
 
     //% block="L293D motor1 pin set EN1 %en1 IN1 %in1 IN2 %in2"
-    //% group="L293D" weight=96
+    //% group="DC모터(L293D)" weight=96
     export function l293dSetPins1(en1: AnalogPin, in1: DigitalPin, in2: DigitalPin): void {
         _l293dEN1 = en1
         _l293dIN1 = in1
@@ -90,7 +90,7 @@ namespace Actuators05 {
     }
 
     //% block="L293D motor2 pin set EN2 %en2 IN3 %in3 IN4 %in4"
-    //% group="L293D" weight=95
+    //% group="DC모터(L293D)" weight=95
     export function l293dSetPins2(en2: AnalogPin, in3: DigitalPin, in4: DigitalPin): void {
         _l293dEN2 = en2
         _l293dIN3 = in3
@@ -99,7 +99,7 @@ namespace Actuators05 {
 
     //% block="L293D motor1 speed %speed"
     //% speed.min=-100 speed.max=100 speed.defl=0
-    //% group="L293D" weight=94
+    //% group="DC모터(L293D)" weight=94
     export function l293dMotor1(speed: number): void {
         let pwm = Math.abs(speed) * 10.23
         if (speed > 0) {
@@ -117,7 +117,7 @@ namespace Actuators05 {
 
     //% block="L293D motor2 speed %speed"
     //% speed.min=-100 speed.max=100 speed.defl=0
-    //% group="L293D" weight=93
+    //% group="DC모터(L293D)" weight=93
     export function l293dMotor2(speed: number): void {
         let pwm = Math.abs(speed) * 10.23
         if (speed > 0) {
@@ -146,7 +146,7 @@ namespace Actuators05 {
     let _tb6612STBY: DigitalPin = DigitalPin.P6
 
     //% block="TB6612FNG pin set PWMA %pwma AIN1 %ain1 AIN2 %ain2 STBY %stby"
-    //% group="TB6612FNG" weight=92
+    //% group="듀얼 H-브리지 모터(TB6612FNG)" weight=92
     export function tb6612SetPinsA(pwma: AnalogPin, ain1: DigitalPin, ain2: DigitalPin, stby: DigitalPin): void {
         _tb6612PWMA = pwma
         _tb6612AIN1 = ain1
@@ -156,7 +156,7 @@ namespace Actuators05 {
     }
 
     //% block="TB6612FNG motorB pin set PWMB %pwmb BIN1 %bin1 BIN2 %bin2"
-    //% group="TB6612FNG" weight=91
+    //% group="듀얼 H-브리지 모터(TB6612FNG)" weight=91
     export function tb6612SetPinsB(pwmb: AnalogPin, bin1: DigitalPin, bin2: DigitalPin): void {
         _tb6612PWMB = pwmb
         _tb6612BIN1 = bin1
@@ -165,7 +165,7 @@ namespace Actuators05 {
 
     //% block="TB6612FNG motorA speed %speed"
     //% speed.min=-100 speed.max=100 speed.defl=0
-    //% group="TB6612FNG" weight=90
+    //% group="듀얼 H-브리지 모터(TB6612FNG)" weight=90
     export function tb6612MotorA(speed: number): void {
         let pwm = Math.abs(speed) * 10.23
         if (speed > 0) {
@@ -183,7 +183,7 @@ namespace Actuators05 {
 
     //% block="TB6612FNG motorB speed %speed"
     //% speed.min=-100 speed.max=100 speed.defl=0
-    //% group="TB6612FNG" weight=89
+    //% group="듀얼 H-브리지 모터(TB6612FNG)" weight=89
     export function tb6612MotorB(speed: number): void {
         let pwm = Math.abs(speed) * 10.23
         if (speed > 0) {
@@ -209,14 +209,14 @@ namespace Actuators05 {
     let _drv8833BIN2: AnalogPin = AnalogPin.P3
 
     //% block="DRV8833 motorA pin set AIN1 %ain1 AIN2 %ain2"
-    //% group="DRV8833" weight=88
+    //% group="듀얼 H-브리지 DC 모터(DRV8833)" weight=88
     export function drv8833SetPinsA(ain1: AnalogPin, ain2: AnalogPin): void {
         _drv8833AIN1 = ain1
         _drv8833AIN2 = ain2
     }
 
     //% block="DRV8833 motorB pin set BIN1 %bin1 BIN2 %bin2"
-    //% group="DRV8833" weight=87
+    //% group="듀얼 H-브리지 DC 모터(DRV8833)" weight=87
     export function drv8833SetPinsB(bin1: AnalogPin, bin2: AnalogPin): void {
         _drv8833BIN1 = bin1
         _drv8833BIN2 = bin2
@@ -224,7 +224,7 @@ namespace Actuators05 {
 
     //% block="DRV8833 motorA speed %speed"
     //% speed.min=-100 speed.max=100 speed.defl=0
-    //% group="DRV8833" weight=86
+    //% group="듀얼 H-브리지 DC 모터(DRV8833)" weight=86
     export function drv8833MotorA(speed: number): void {
         let pwm = Math.abs(speed) * 10.23
         if (speed > 0) {
@@ -241,7 +241,7 @@ namespace Actuators05 {
 
     //% block="DRV8833 motorB speed %speed"
     //% speed.min=-100 speed.max=100 speed.defl=0
-    //% group="DRV8833" weight=85
+    //% group="듀얼 H-브리지 DC 모터(DRV8833)" weight=85
     export function drv8833MotorB(speed: number): void {
         let pwm = Math.abs(speed) * 10.23
         if (speed > 0) {
@@ -532,14 +532,14 @@ namespace Actuators05 {
     let _fanPin: AnalogPin = AnalogPin.P0
 
     //% block="fan pin set %pin"
-    //% group="Fan" weight=58
+    //% group="Fan모터" weight=58
     export function fanSetPin(pin: AnalogPin): void {
         _fanPin = pin
     }
 
     //% block="fan speed %speed \\%"
     //% speed.min=0 speed.max=100 speed.defl=50
-    //% group="Fan" weight=57
+    //% group="Fan모터" weight=57
     export function fanSpeed(speed: number): void {
         pins.analogWritePin(_fanPin, speed * 10.23)
     }
@@ -551,14 +551,14 @@ namespace Actuators05 {
     let _pumpPin: DigitalPin = DigitalPin.P0
 
     //% block="pump pin set %pin"
-    //% group="Pump" weight=56
+    //% group="Pump모터" weight=56
     export function pumpSetPin(pin: DigitalPin): void {
         _pumpPin = pin
     }
 
     //% block="pump %state"
     //% state.shadow="toggleOnOff"
-    //% group="Pump" weight=55
+    //% group="Pump모터" weight=55
     export function pump(state: boolean): void {
         pins.digitalWritePin(_pumpPin, state ? 1 : 0)
     }

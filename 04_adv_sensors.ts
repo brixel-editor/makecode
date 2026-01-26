@@ -98,7 +98,7 @@ namespace AdvSensors {
     let _apds9960GestureDetected: boolean = false
 
     //% block="Gesture sensor(APDS9960) setup"
-    //% group="APDS9960" weight=90
+    //% group="제스처(APDS9960)" weight=90
     export function apds9960Setup(): void {
         _apds9960Addr = 0x39
 
@@ -132,7 +132,7 @@ namespace AdvSensors {
     //% sensor.defl=APDS9960SensorType.Ambient
     //% enable.defl=APDS9960Enable.Enable
     //% interrupt.defl=APDS9960Interrupt.Disable
-    //% group="APDS9960" weight=89
+    //% group="제스처(APDS9960)" weight=89
     //% inlineInputMode=inline
     export function apds9960EnableSensor(sensor: APDS9960SensorType, enable: APDS9960Enable, interrupt: APDS9960Interrupt): void {
         // Enable 레지스터 읽기
@@ -173,7 +173,7 @@ namespace AdvSensors {
 
     //% block="APDS9960 %atype light"
     //% atype.defl=APDS9960AmbientType.Ambient
-    //% group="APDS9960" weight=88
+    //% group="제스처(APDS9960)" weight=88
     export function apds9960ReadAmbient(atype: APDS9960AmbientType): number {
         // Clear/Ambient 데이터 읽기
         pins.i2cWriteNumber(_apds9960Addr, 0x94, NumberFormat.UInt8BE)
@@ -188,7 +188,7 @@ namespace AdvSensors {
     }
 
     //% block="APDS9960 proximity sensor value"
-    //% group="APDS9960" weight=87
+    //% group="제스처(APDS9960)" weight=87
     export function apds9960GetProximity(): number {
         pins.i2cWriteNumber(_apds9960Addr, 0x9C, NumberFormat.UInt8BE)
         _apds9960Proximity = pins.i2cReadNumber(_apds9960Addr, NumberFormat.UInt8BE)
@@ -196,7 +196,7 @@ namespace AdvSensors {
     }
 
     //% block="APDS9960 gesture detected"
-    //% group="APDS9960" weight=86
+    //% group="제스처(APDS9960)" weight=86
     export function apds9960GestureAvailable(): boolean {
         // 제스처 상태 확인
         pins.i2cWriteNumber(_apds9960Addr, 0xAF, NumberFormat.UInt8BE)
@@ -207,7 +207,7 @@ namespace AdvSensors {
 
     //% block="APDS9960 gesture read %gesture"
     //% gesture.defl=APDS9960GestureKR.Left
-    //% group="APDS9960" weight=85
+    //% group="제스처(APDS9960)" weight=85
     export function apds9960GetGesture(gesture: APDS9960GestureKR): boolean {
         // 제스처 상태 확인
         pins.i2cWriteNumber(_apds9960Addr, 0xAF, NumberFormat.UInt8BE)
@@ -238,7 +238,7 @@ namespace AdvSensors {
     }
 
     //% block="APDS9960 init"
-    //% group="APDS9960" weight=75
+    //% group="제스처(APDS9960)" weight=75
     export function apds9960Init(): void {
         // Enable 레지스터 (PON + AEN + PEN + GEN)
         pins.i2cWriteNumber(_apds9960Addr, 0x80, NumberFormat.UInt8BE)
@@ -247,7 +247,7 @@ namespace AdvSensors {
     }
 
     //% block="APDS9960 gesture read"
-    //% group="APDS9960" weight=74
+    //% group="제스처(APDS9960)" weight=74
     export function apds9960ReadGesture(): APDS9960Gesture {
         // 제스처 상태 확인
         pins.i2cWriteNumber(_apds9960Addr, 0xAF, NumberFormat.UInt8BE)
@@ -273,14 +273,14 @@ namespace AdvSensors {
     }
 
     //% block="APDS9960 proximity read"
-    //% group="APDS9960" weight=73
+    //% group="제스처(APDS9960)" weight=73
     export function apds9960ReadProximity(): number {
         pins.i2cWriteNumber(_apds9960Addr, 0x9C, NumberFormat.UInt8BE)
         return pins.i2cReadNumber(_apds9960Addr, NumberFormat.UInt8BE)
     }
 
     //% block="APDS9960 color read %color"
-    //% group="APDS9960" weight=72
+    //% group="제스처(APDS9960)" weight=72
     export function apds9960ReadColor(color: RGBColor): number {
         // RGBC 데이터 읽기
         pins.i2cWriteNumber(_apds9960Addr, 0x94, NumberFormat.UInt8BE)
@@ -352,7 +352,7 @@ namespace AdvSensors {
     let _tcs34725DetectedColor: TCS34725Color = TCS34725Color.Black
 
     //% block="Color sensor(TCS34725) setup"
-    //% group="TCS34725" weight=80
+    //% group="색상감지(TCS34725)" weight=80
     export function tcs34725Setup(): void {
         _tcs34725Addr = 0x29
         // Enable 레지스터 (PON + AEN)
@@ -368,7 +368,7 @@ namespace AdvSensors {
     }
 
     //% block="Color sensor reset"
-    //% group="TCS34725" weight=79
+    //% group="색상감지(TCS34725)" weight=79
     export function tcs34725Reset(): void {
         _tcs34725R = 0
         _tcs34725G = 0
@@ -382,7 +382,7 @@ namespace AdvSensors {
 
     //% block="Color sensor detect %dtype"
     //% dtype.defl=TCS34725DetectType.Color
-    //% group="TCS34725" weight=78
+    //% group="색상감지(TCS34725)" weight=78
     export function tcs34725Detect(dtype: TCS34725DetectType): number {
         // 모든 채널 읽기
         pins.i2cWriteNumber(_tcs34725Addr, 0x80 | 0x14, NumberFormat.UInt8BE)
@@ -415,7 +415,7 @@ namespace AdvSensors {
 
     //% block="Color sensor %channel (0~255)"
     //% channel.defl=TCS34725Channel.Red
-    //% group="TCS34725" weight=77
+    //% group="색상감지(TCS34725)" weight=77
     export function tcs34725GetChannel(channel: TCS34725Channel): number {
         if (channel == TCS34725Channel.Red) return _tcs34725R8
         if (channel == TCS34725Channel.Green) return _tcs34725G8
@@ -425,7 +425,7 @@ namespace AdvSensors {
 
     //% block="Color sensor is %color ?"
     //% color.defl=TCS34725Color.Red
-    //% group="TCS34725" weight=76
+    //% group="색상감지(TCS34725)" weight=76
     export function tcs34725IsColor(color: TCS34725Color): boolean {
         return _tcs34725DetectedColor == color
     }
@@ -476,7 +476,7 @@ namespace AdvSensors {
 
     //% block="TCS34725 init address %addr"
     //% addr.defl=0x29
-    //% group="TCS34725" weight=71
+    //% group="색상감지(TCS34725)" weight=71
     export function tcs34725Init(addr: number): void {
         _tcs34725Addr = addr
         // Enable 레지스터 (PON + AEN)
@@ -489,7 +489,7 @@ namespace AdvSensors {
     }
 
     //% block="TCS34725 color read %color"
-    //% group="TCS34725" weight=70
+    //% group="색상감지(TCS34725)" weight=70
     export function tcs34725Read(color: RGBColor): number {
         // Clear 데이터 읽기
         pins.i2cWriteNumber(_tcs34725Addr, 0x80 | 0x14, NumberFormat.UInt8BE)
@@ -568,7 +568,7 @@ namespace AdvSensors {
     let _mpu6050Temp: number = 0
 
     //% block="Gyro sensor(MPU6050) setup"
-    //% group="MPU6050" weight=75
+    //% group="6축 가속도(MPU6050)" weight=75
     export function mpu6050Setup(): void {
         _mpu6050Addr = 0x68
         // 슬립 모드 해제
@@ -582,7 +582,7 @@ namespace AdvSensors {
     }
 
     //% block="MPU6050 update values"
-    //% group="MPU6050" weight=74
+    //% group="6축 가속도(MPU6050)" weight=74
     export function mpu6050Update(): void {
         // 가속도 읽기
         pins.i2cWriteNumber(_mpu6050Addr, 0x3B, NumberFormat.UInt8BE)
@@ -616,7 +616,7 @@ namespace AdvSensors {
 
     //% block="MPU6050 read: %dtype"
     //% dtype.defl=MPU6050DataType.Temperature
-    //% group="MPU6050" weight=73
+    //% group="6축 가속도(MPU6050)" weight=73
     export function mpu6050ReadValue(dtype: MPU6050DataType): number {
         if (dtype == MPU6050DataType.Temperature) return _mpu6050Temp
         if (dtype == MPU6050DataType.AccelX) return _mpu6050AccelX
@@ -629,7 +629,7 @@ namespace AdvSensors {
 
     //% block="Gyro offset set X: %x Y: %y Z: %z"
     //% x.defl=0 y.defl=0 z.defl=0
-    //% group="MPU6050" weight=72
+    //% group="6축 가속도(MPU6050)" weight=72
     //% inlineInputMode=inline
     export function mpu6050SetGyroOffset(x: number, y: number, z: number): void {
         _mpu6050GyroOffsetX = x
@@ -640,7 +640,7 @@ namespace AdvSensors {
     //% block="Gyro auto calibrate stabilize: %stabilizeTime ms measure: %measureTime ms"
     //% stabilizeTime.defl=1000 stabilizeTime.min=100 stabilizeTime.max=5000
     //% measureTime.defl=3000 measureTime.min=500 measureTime.max=10000
-    //% group="MPU6050" weight=71
+    //% group="6축 가속도(MPU6050)" weight=71
     //% inlineInputMode=inline
     export function mpu6050AutoCalibrate(stabilizeTime: number, measureTime: number): void {
         // 안정화 대기
@@ -679,7 +679,7 @@ namespace AdvSensors {
 
     //% block="MPU6050 init address %addr"
     //% addr.defl=0x68
-    //% group="MPU6050" weight=70
+    //% group="6축 가속도(MPU6050)" weight=70
     export function mpu6050Init(addr: number): void {
         _mpu6050Addr = addr
         // 슬립 모드 해제
@@ -688,7 +688,7 @@ namespace AdvSensors {
     }
 
     //% block="MPU6050 read %mtype axis %axis"
-    //% group="MPU6050" weight=69
+    //% group="6축 가속도(MPU6050)" weight=69
     export function mpu6050Read(mtype: MPU6050Type, axis: Axis): number {
         let reg = 0x3B  // 가속도 X 시작 레지스터
 
@@ -718,7 +718,7 @@ namespace AdvSensors {
 
     //% block="ADXL345 init address %addr"
     //% addr.defl=0x53
-    //% group="ADXL345" weight=67
+    //% group="3축 가속도(ADXL345)" weight=67
     export function adxl345Init(addr: number): void {
         _adxl345Addr = addr
         // 측정 모드 활성화 (POWER_CTL 레지스터)
@@ -729,7 +729,7 @@ namespace AdvSensors {
     }
 
     //% block="ADXL345 acceleration read axis %axis"
-    //% group="ADXL345" weight=66
+    //% group="3축 가속도(ADXL345)" weight=66
     export function adxl345Read(axis: Axis): number {
         let reg = 0x32 + (axis * 2)  // X=0x32, Y=0x34, Z=0x36
 
@@ -755,7 +755,7 @@ namespace AdvSensors {
 
     //% block="BMP280 init address %addr"
     //% addr.defl=0x76
-    //% group="BMP280" weight=65
+    //% group="대기압(BMP280)" weight=65
     export function bmp280Init(addr: number): void {
         _bmp280Addr = addr
         // 컨트롤 레지스터 설정 (Normal mode, oversampling x1)
@@ -764,7 +764,7 @@ namespace AdvSensors {
     }
 
     //% block="BMP280 read %btype"
-    //% group="BMP280" weight=64
+    //% group="대기압(BMP280)" weight=64
     export function bmp280Read(btype: BMP280Type): number {
         // 기압 데이터 읽기 (0xF7~0xF9)
         pins.i2cWriteNumber(_bmp280Addr, 0xF7, NumberFormat.UInt8BE)
@@ -804,7 +804,7 @@ namespace AdvSensors {
 
     //% block="BME280 init address %addr"
     //% addr.defl=0x76
-    //% group="BME280" weight=63
+    //% group="대기압(BME280)" weight=63
     export function bme280Init(addr: number): void {
         _bme280Addr = addr
         // 습도 오버샘플링 설정
@@ -815,7 +815,7 @@ namespace AdvSensors {
     }
 
     //% block="BME280 read %btype"
-    //% group="BME280" weight=62
+    //% group="대기압(BME280)" weight=62
     export function bme280Read(btype: BME280Type): number {
         // 모든 데이터 읽기 (0xF7~0xFE)
         pins.i2cWriteNumber(_bme280Addr, 0xF7, NumberFormat.UInt8BE)
@@ -877,7 +877,7 @@ namespace AdvSensors {
     let _hrBeatTimes: number[] = []
 
     //% block="Heart rate sensor setup"
-    //% group="MAX30102" weight=35
+    //% group="심박(MAX30102)" weight=35
     export function heartRateSetup(): void {
         _hrAddr = 0x57
 
@@ -905,7 +905,7 @@ namespace AdvSensors {
     }
 
     //% block="Finger detected"
-    //% group="MAX30102" weight=34
+    //% group="심박(MAX30102)" weight=34
     export function heartRateFingerDetected(): boolean {
         heartRateReadRaw()
         // IR 값이 일정 수준 이상이면 손가락 감지
@@ -914,7 +914,7 @@ namespace AdvSensors {
     }
 
     //% block="Heart rate read (BPM)"
-    //% group="MAX30102" weight=33
+    //% group="심박(MAX30102)" weight=33
     export function heartRateGetBPM(): number {
         if (!_hrFingerDetected) {
             heartRateFingerDetected()
@@ -963,7 +963,7 @@ namespace AdvSensors {
     }
 
     //% block="SpO2 read (%)"
-    //% group="MAX30102" weight=32
+    //% group="심박(MAX30102)" weight=32
     export function heartRateGetSpO2(): number {
         if (!_hrFingerDetected) {
             heartRateFingerDetected()
@@ -992,20 +992,20 @@ namespace AdvSensors {
     }
 
     //% block="Heartbeat detected"
-    //% group="MAX30102" weight=31
+    //% group="심박(MAX30102)" weight=31
     export function heartRateBeatDetected(): boolean {
         heartRateReadRaw()
         return _hrBeatDetected
     }
 
     //% block="Sensor ready"
-    //% group="MAX30102" weight=30
+    //% group="심박(MAX30102)" weight=30
     export function heartRateIsReady(): boolean {
         return _hrReady && _hrFingerDetected
     }
 
     //% block="Sensor temperature (°C)"
-    //% group="MAX30102" weight=29
+    //% group="심박(MAX30102)" weight=29
     export function heartRateGetTemperature(): number {
         // 온도 측정 트리거
         pins.i2cWriteNumber(_hrAddr, 0x2101, NumberFormat.UInt16BE)
@@ -1025,7 +1025,7 @@ namespace AdvSensors {
     //% block="%stype sensor power setting %power"
     //% stype.defl=HeartRateSensorType.HeartRate
     //% power.defl=HeartRatePower.Medium
-    //% group="MAX30102" weight=28
+    //% group="심박(MAX30102)" weight=28
     //% inlineInputMode=inline
     export function heartRateSetPower(stype: HeartRateSensorType, power: HeartRatePower): void {
         let ledCurrent = 0x24  // 기본 6.4mA
@@ -1051,14 +1051,14 @@ namespace AdvSensors {
     }
 
     //% block="Red LED raw value read"
-    //% group="MAX30102" weight=27
+    //% group="심박(MAX30102)" weight=27
     export function heartRateGetRedRaw(): number {
         heartRateReadRaw()
         return _hrRedLED
     }
 
     //% block="IR LED raw value read"
-    //% group="MAX30102" weight=26
+    //% group="심박(MAX30102)" weight=26
     export function heartRateGetIRRaw(): number {
         heartRateReadRaw()
         return _hrIRLED
@@ -1459,7 +1459,7 @@ namespace AdvSensors {
 
     //% block="RTC(DS1307) set %addr"
     //% addr.defl=0x68
-    //% group="Time" weight=100
+    //% group="실시간(RTC)" weight=100
     export function rtcInit(addr: number): void {
         _rtcAddr = addr
         // DS1307/DS3231 초기화 - 오실레이터 활성화
@@ -1477,7 +1477,7 @@ namespace AdvSensors {
     //% hour.defl=12 hour.min=0 hour.max=23
     //% minute.defl=0 minute.min=0 minute.max=59
     //% second.defl=0 second.min=0 second.max=59
-    //% group="Time" weight=99
+    //% group="실시간(RTC)" weight=99
     //% inlineInputMode=inline
     export function rtcSetTime(addr: number, year: number, month: number, day: number, hour: number, minute: number, second: number): void {
         let buf = pins.createBuffer(8)
@@ -1503,7 +1503,7 @@ namespace AdvSensors {
 
     //% block="RTC %addr|get %data"
     //% addr.defl=1
-    //% group="Time" weight=98
+    //% group="실시간(RTC)" weight=98
     export function rtcGet(addr: number, data: RTCData): number {
         rtcReadAll()
 
@@ -1522,7 +1522,7 @@ namespace AdvSensors {
     //% block="RTC %addr|clock %action"
     //% addr.defl=1
     //% action.shadow="toggleOnOff" action.defl=true
-    //% group="Time" weight=97
+    //% group="실시간(RTC)" weight=97
     export function rtcStart(addr: number, action: boolean): void {
         // 초 레지스터의 CH 비트로 시계 시작/정지
         pins.i2cWriteNumber(_rtcAddr, 0x00, NumberFormat.UInt8BE)
@@ -1542,7 +1542,7 @@ namespace AdvSensors {
 
     //% block="RTC %addr|SQW output %freq"
     //% addr.defl=1
-    //% group="Time" weight=96
+    //% group="실시간(RTC)" weight=96
     export function rtcSetSqw(addr: number, freq: RTCSqwFreq): void {
         let control = 0x00
 
@@ -1572,7 +1572,7 @@ namespace AdvSensors {
 
     //% block="RTC %addr|time string get format %format"
     //% addr.defl=1
-    //% group="Time" weight=95
+    //% group="실시간(RTC)" weight=95
     export function rtcGetString(addr: number, format: RTCFormat): string {
         rtcReadAll()
 
@@ -1643,7 +1643,7 @@ namespace AdvSensors {
 
     //% block="INA219 set I2C address %addr"
     //% addr.defl=0x40
-    //% group="INA219" weight=49
+    //% group="전류/전압/전력 측정(INA219)" weight=49
     export function ina219Init(addr: number): void {
         _ina219Addr = addr
 
@@ -1664,7 +1664,7 @@ namespace AdvSensors {
     }
 
     //% block="INA219 read %data"
-    //% group="INA219" weight=48
+    //% group="전류/전압/전력 측정(INA219)" weight=48
     export function ina219Read(data: INA219Data): number {
         let reg = 0
         switch (data) {
@@ -1710,7 +1710,7 @@ namespace AdvSensors {
     //% block="ACS712 current (A)|pin %pin|type %sensorType"
     //% pin.defl=AnalogPin.P0
     //% sensorType.defl=ACS712Type.ACS712_20A
-    //% group="ACS712" weight=47
+    //% group="전류 센서(ACS712)" weight=47
     export function acs712Current(pin: AnalogPin, sensorType: ACS712Type): number {
         let raw = pins.analogReadPin(pin)
         // micro:bit는 3.3V 기준, ACS712는 5V 기준이므로 변환 필요
@@ -1729,7 +1729,7 @@ namespace AdvSensors {
     //% block="voltage sensor read (V)|pin %pin|maxvoltage %maxVoltage"
     //% pin.defl=AnalogPin.P0
     //% maxVoltage.defl=25
-    //% group="Voltage Sensor" weight=46
+    //% group="전압센서(Voltage Sensor)" weight=46
     export function voltageRead(pin: AnalogPin, maxVoltage: number): number {
         let raw = pins.analogReadPin(pin)
         let voltage = raw * maxVoltage / 1023
@@ -1739,7 +1739,7 @@ namespace AdvSensors {
     //% block="battery level (%)|pin %pin|minvoltage %minV|maxvoltage %maxV"
     //% pin.defl=AnalogPin.P0
     //% minV.defl=3.0 maxV.defl=4.2
-    //% group="Voltage Sensor" weight=45
+    //% group="전압센서(Voltage Sensor)" weight=45
     //% inlineInputMode=inline
     export function batteryPercent(pin: AnalogPin, minV: number, maxV: number): number {
         let raw = pins.analogReadPin(pin)

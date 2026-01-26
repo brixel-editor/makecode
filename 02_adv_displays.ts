@@ -4,7 +4,7 @@
  */
 
 //% weight=1090 color=#FAC907 icon="\uf108" block="02. Adv Displays"
-//% groups="['OLED', '도트매트릭스(I2C-HT16K33)', '도트매트릭스(SPI-MAX7219)', 'LED바74HC595', 'TFT LCD']"
+//% groups="['OLED', '도트매트릭스(I2C-HT16K33)', '도트매트릭스(SPI-MAX7219)', 'LED바(74HC595)', 'TFT LCD']"
 namespace AdvDisplays {
 
 
@@ -422,7 +422,7 @@ namespace AdvDisplays {
     //% block="MAX7219 set|matrix count %num|DIN pin %din|CS pin %cs|CLK pin %clk"
     //% num.defl=1 num.min=1 num.max=8
     //% din.defl=DigitalPin.P15 cs.defl=DigitalPin.P16 clk.defl=DigitalPin.P13
-    //% group="MAX7219" weight=76
+    //% group="도트매트릭스(SPI-MAX7219)" weight=76
     //% inlineInputMode=inline
     export function max7219Init(num: number, din: DigitalPin, cs: DigitalPin, clk: DigitalPin): void {
         _max7219Num = num
@@ -447,7 +447,7 @@ namespace AdvDisplays {
     }
 
     //% block="MAX7219 rotate %rotation"
-    //% group="MAX7219" weight=75
+    //% group="도트매트릭스(SPI-MAX7219)" weight=75
     export function max7219SetRotation(rotation: MAX7219Rotation): void {
         _max7219Rotation = rotation
     }
@@ -455,7 +455,7 @@ namespace AdvDisplays {
     //% block="MAX7219 text show %text|align %align|screen clear %clear"
     //% text.defl="Hi!"
     //% clear.shadow="toggleYesNo" clear.defl=true
-    //% group="MAX7219" weight=74
+    //% group="도트매트릭스(SPI-MAX7219)" weight=74
     //% inlineInputMode=inline
     export function max7219ShowText(text: string, align: MAX7219Align, clear: boolean): void {
         if (clear) max7219Clear()
@@ -502,7 +502,7 @@ namespace AdvDisplays {
     //% block="MAX7219 scroll text %text|delay %delay ms"
     //% text.defl="Hello World!"
     //% delay.defl=100 delay.min=20 delay.max=500
-    //% group="MAX7219" weight=73
+    //% group="도트매트릭스(SPI-MAX7219)" weight=73
     //% inlineInputMode=inline
     export function max7219ScrollText(text: string, delay: number): void {
         text = text.toUpperCase()
@@ -549,7 +549,7 @@ namespace AdvDisplays {
     //% x.min=0 x.max=63 x.defl=0
     //% y.min=0 y.max=7 y.defl=0
     //% value.shadow="toggleOnOff" value.defl=true
-    //% group="MAX7219" weight=72
+    //% group="도트매트릭스(SPI-MAX7219)" weight=72
     //% inlineInputMode=inline
     export function max7219SetPixel(x: number, y: number, value: boolean): void {
         let matrixIdx = Math.floor(x / 8)
@@ -564,7 +564,7 @@ namespace AdvDisplays {
     }
 
     //% block="MAX7219 refresh"
-    //% group="MAX7219" weight=71
+    //% group="도트매트릭스(SPI-MAX7219)" weight=71
     export function max7219Refresh(): void {
         for (let row = 0; row < 8; row++) {
             pins.digitalWritePin(_max7219CS, 0)
@@ -577,7 +577,7 @@ namespace AdvDisplays {
     }
 
     //% block="MAX7219 clear all"
-    //% group="MAX7219" weight=70
+    //% group="도트매트릭스(SPI-MAX7219)" weight=70
     export function max7219Clear(): void {
         for (let m = 0; m < _max7219Num; m++) {
             for (let i = 0; i < 8; i++) {
@@ -588,7 +588,7 @@ namespace AdvDisplays {
     }
 
     //% block="MAX7219 fill all"
-    //% group="MAX7219" weight=69
+    //% group="도트매트릭스(SPI-MAX7219)" weight=69
     export function max7219Fill(): void {
         for (let m = 0; m < _max7219Num; m++) {
             for (let i = 0; i < 8; i++) {
@@ -600,14 +600,14 @@ namespace AdvDisplays {
 
     //% block="MAX7219 brightness set %brightness"
     //% brightness.min=0 brightness.max=15 brightness.defl=7
-    //% group="MAX7219" weight=68
+    //% group="도트매트릭스(SPI-MAX7219)" weight=68
     export function max7219SetBrightness(brightness: number): void {
         max7219SendAll(0x0A, Math.clamp(0, 15, brightness))
     }
 
     //% block="MAX7219 power %state"
     //% state.shadow="toggleOnOff" state.defl=true
-    //% group="MAX7219" weight=67
+    //% group="도트매트릭스(SPI-MAX7219)" weight=67
     export function max7219Power(state: boolean): void {
         max7219SendAll(0x0C, state ? 0x01 : 0x00)
     }
@@ -725,7 +725,7 @@ namespace AdvDisplays {
     //% brightness.defl=15 brightness.min=0 brightness.max=15
     //% blink.shadow="toggleOnOff" blink.defl=false
     //% rotation.defl=0 rotation.min=0 rotation.max=3
-    //% group="MAX7219" weight=66
+    //% group="도트매트릭스(I2C-HT16K33)" weight=66
     //% inlineInputMode=inline
     export function ht16k33Init(num: number, size: HT16K33Size, addr: number, brightness: number, blink: boolean, rotation: number): void {
         _ht16k33Addr = addr
@@ -751,7 +751,7 @@ namespace AdvDisplays {
     //% num.defl=1
     //% text.defl="Hello"
     //% speed.defl=0.2
-    //% group="HT16K33" weight=65
+    //% group="도트매트릭스(I2C-HT16K33)" weight=65
     //% inlineInputMode=inline
     export function ht16k33ShowText(num: number, text: string, scroll: HT16K33Scroll, speed: number): void {
         text = text.toUpperCase()
@@ -771,7 +771,7 @@ namespace AdvDisplays {
 
     //% block="I2C matrix %num |screenat show"
     //% num.defl=1
-    //% group="HT16K33" weight=64
+    //% group="도트매트릭스(I2C-HT16K33)" weight=64
     export function ht16k33Refresh(num: number): void {
         // 버퍼를 I2C로 전송
         let buf = pins.createBuffer(17)
@@ -783,7 +783,7 @@ namespace AdvDisplays {
     }
 
     //% block="I2C matrix screen clear"
-    //% group="HT16K33" weight=63
+    //% group="도트매트릭스(I2C-HT16K33)" weight=63
     export function ht16k33Clear(): void {
         for (let i = 0; i < 16; i++) {
             _ht16k33Buffer[i] = 0
@@ -793,7 +793,7 @@ namespace AdvDisplays {
 
     //% block="I2C matrix brightness(0-15) %brightness"
     //% brightness.defl=15 brightness.min=0 brightness.max=15
-    //% group="HT16K33" weight=62
+    //% group="도트매트릭스(I2C-HT16K33)" weight=62
     export function ht16k33SetBrightness(brightness: number): void {
         _ht16k33Brightness = Math.clamp(0, 15, brightness)
         pins.i2cWriteNumber(_ht16k33Addr, 0xE0 | _ht16k33Brightness, NumberFormat.UInt8BE)
@@ -801,7 +801,7 @@ namespace AdvDisplays {
 
     //% block="I2C matrix blink %blink"
     //% blink.shadow="toggleOnOff" blink.defl=false
-    //% group="HT16K33" weight=61
+    //% group="도트매트릭스(I2C-HT16K33)" weight=61
     export function ht16k33SetBlink(blink: boolean): void {
         _ht16k33Blink = blink ? 1 : 0
         // 0x81: ON 깜빡임 없음, 0x83: ON 2Hz 깜빡임
@@ -813,7 +813,7 @@ namespace AdvDisplays {
     //% row.min=0 row.max=7 row.defl=0
     //% col.min=0 col.max=7 col.defl=0
     //% state.shadow="toggleOnOff" state.defl=true
-    //% group="HT16K33" weight=60
+    //% group="도트매트릭스(I2C-HT16K33)" weight=60
     //% inlineInputMode=inline
     export function ht16k33SetPixel(num: number, row: number, col: number, state: boolean): void {
         if (row < 0 || row > 7 || col < 0 || col > 7) return
@@ -830,7 +830,7 @@ namespace AdvDisplays {
     //% num.defl=1
     //% row.min=0 row.max=7 row.defl=0
     //% col.min=0 col.max=7 col.defl=0
-    //% group="HT16K33" weight=59
+    //% group="도트매트릭스(I2C-HT16K33)" weight=59
     //% inlineInputMode=inline
     export function ht16k33SetBicolorPixel(num: number, row: number, col: number, color: HT16K33Color): void {
         if (row < 0 || row > 7 || col < 0 || col > 7) return
@@ -860,7 +860,7 @@ namespace AdvDisplays {
     //% y1.min=0 y1.max=7 y1.defl=0
     //% x2.min=0 x2.max=7 x2.defl=7
     //% y2.min=0 y2.max=7 y2.defl=7
-    //% group="HT16K33" weight=58
+    //% group="도트매트릭스(I2C-HT16K33)" weight=58
     //% inlineInputMode=inline
     export function ht16k33DrawLine(num: number, x1: number, y1: number, x2: number, y2: number): void {
         // Bresenham's line algorithm
@@ -891,7 +891,7 @@ namespace AdvDisplays {
     //% cx.min=0 cx.max=7 cx.defl=3
     //% cy.min=0 cy.max=7 cy.defl=3
     //% r.min=1 r.max=4 r.defl=3
-    //% group="HT16K33" weight=57
+    //% group="도트매트릭스(I2C-HT16K33)" weight=57
     //% inlineInputMode=inline
     export function ht16k33DrawCircle(num: number, cx: number, cy: number, r: number): void {
         // Midpoint circle algorithm
@@ -924,7 +924,7 @@ namespace AdvDisplays {
     //% y.min=0 y.max=7 y.defl=0
     //% w.min=1 w.max=8 w.defl=4
     //% h.min=1 h.max=8 h.defl=4
-    //% group="74HC595" weight=56
+    //% group="도트매트릭스(I2C-HT16K33)" weight=56
     //% inlineInputMode=inline
     export function ht16k33DrawRect(num: number, x: number, y: number, w: number, h: number, style: HT16K33RectStyle): void {
         if (style == HT16K33RectStyle.Outline) {
@@ -949,7 +949,7 @@ namespace AdvDisplays {
 
     //% block="I2C matrix %num |fill all"
     //% num.defl=1
-    //% group="74HC595" weight=55
+    //% group="도트매트릭스(I2C-HT16K33)" weight=55
     export function ht16k33Fill(num: number): void {
         for (let i = 0; i < 16; i++) {
             _ht16k33Buffer[i] = 0xFF
@@ -998,7 +998,7 @@ namespace AdvDisplays {
     //% clock.defl=DigitalPin.P1
     //% latch.defl=DigitalPin.P2
     //% count.defl=1 count.min=1 count.max=8
-    //% group="74HC595" weight=54
+    //% group="LED바(74HC595)" weight=54
     //% inlineInputMode=inline
     export function hc595Init(data: DigitalPin, clock: DigitalPin, latch: DigitalPin, count: number): void {
         _hc595Data = data
@@ -1023,7 +1023,7 @@ namespace AdvDisplays {
 
     //% block="74HC595 byte output %value"
     //% value.min=0 value.max=255 value.defl=0
-    //% group="74HC595" weight=53
+    //% group="LED바(74HC595)" weight=53
     export function hc595Output(value: number): void {
         _hc595Buffer[0] = value & 0xFF
         hc595Update()
@@ -1032,7 +1032,7 @@ namespace AdvDisplays {
     //% block="74HC595 chip %chipIndex at byte %value output"
     //% chipIndex.min=0 chipIndex.max=7 chipIndex.defl=0
     //% value.min=0 value.max=255 value.defl=0
-    //% group="74HC595" weight=52
+    //% group="LED바(74HC595)" weight=52
     export function hc595OutputToChip(chipIndex: number, value: number): void {
         if (chipIndex >= 0 && chipIndex < _hc595ChipCount) {
             _hc595Buffer[chipIndex] = value & 0xFF
@@ -1043,7 +1043,7 @@ namespace AdvDisplays {
     //% block="74HC595 pin %pin %state"
     //% pin.min=0 pin.max=63 pin.defl=0
     //% state.shadow="toggleOnOff" state.defl=true
-    //% group="74HC595" weight=51
+    //% group="LED바(74HC595)" weight=51
     export function hc595SetPin(pin: number, state: boolean): void {
         let chipIndex = Math.floor(pin / 8)
         let bitIndex = pin % 8
@@ -1060,7 +1060,7 @@ namespace AdvDisplays {
 
     //% block="74HC595 pin %pin toggle"
     //% pin.min=0 pin.max=63 pin.defl=0
-    //% group="74HC595" weight=50
+    //% group="LED바(74HC595)" weight=50
     export function hc595TogglePin(pin: number): void {
         let chipIndex = Math.floor(pin / 8)
         let bitIndex = pin % 8
@@ -1073,7 +1073,7 @@ namespace AdvDisplays {
 
     //% block="74HC595 pin %pin state"
     //% pin.min=0 pin.max=63 pin.defl=0
-    //% group="74HC595" weight=49
+    //% group="LED바(74HC595)" weight=49
     export function hc595GetPin(pin: number): boolean {
         let chipIndex = Math.floor(pin / 8)
         let bitIndex = pin % 8
@@ -1085,7 +1085,7 @@ namespace AdvDisplays {
     }
 
     //% block="74HC595 all on"
-    //% group="74HC595" weight=48
+    //% group="LED바(74HC595)" weight=48
     export function hc595Fill(): void {
         for (let i = 0; i < _hc595ChipCount; i++) {
             _hc595Buffer[i] = 0xFF
@@ -1094,7 +1094,7 @@ namespace AdvDisplays {
     }
 
     //% block="74HC595 all off"
-    //% group="74HC595" weight=47
+    //% group="LED바(74HC595)" weight=47
     export function hc595Clear(): void {
         for (let i = 0; i < _hc595ChipCount; i++) {
             _hc595Buffer[i] = 0x00
@@ -1103,7 +1103,7 @@ namespace AdvDisplays {
     }
 
     //% block="74HC595 left shift"
-    //% group="74HC595" weight=46
+    //% group="LED바(74HC595)" weight=46
     export function hc595ShiftLeft(): void {
         let carry = 0
         for (let i = 0; i < _hc595ChipCount; i++) {
@@ -1115,7 +1115,7 @@ namespace AdvDisplays {
     }
 
     //% block="74HC595 right shift"
-    //% group="74HC595" weight=45
+    //% group="LED바(74HC595)" weight=45
     export function hc595ShiftRight(): void {
         let carry = 0
         for (let i = _hc595ChipCount - 1; i >= 0; i--) {
@@ -1129,7 +1129,7 @@ namespace AdvDisplays {
     //% block="74HC595 LED bar graph value %value|max %max"
     //% value.defl=0
     //% max.defl=8 max.min=1 max.max=64
-    //% group="74HC595" weight=44
+    //% group="LED바(74HC595)" weight=44
     export function hc595BarGraph(value: number, max: number): void {
         let totalBits = _hc595ChipCount * 8
         let ledsOn = Math.floor((value * totalBits) / max)
@@ -1235,7 +1235,7 @@ namespace AdvDisplays {
     //% cs.defl=DigitalPin.P16
     //% dc.defl=DigitalPin.P8
     //% rst.defl=DigitalPin.P12
-    //% group="TFT" weight=70
+    //% group="TFT LCD" weight=70
     //% inlineInputMode=inline
     export function st7735Init(cs: DigitalPin, dc: DigitalPin, rst: DigitalPin, rotation: TFTRotation): void {
         _st7735CS = cs
@@ -1293,7 +1293,7 @@ namespace AdvDisplays {
 
     //% block="ST7735 screen fill color %color"
     //% color.shadow="tftColorPicker"
-    //% group="TFT" weight=69
+    //% group="TFT LCD" weight=69
     export function st7735FillScreen(color: number): void {
         st7735SetWindow(0, 0, _st7735Width - 1, _st7735Height - 1)
         st7735WriteCmd(0x2C)  // Memory Write
@@ -1314,7 +1314,7 @@ namespace AdvDisplays {
     //% x.min=0 x.defl=0
     //% y.min=0 y.defl=0
     //% color.shadow="tftColorPicker"
-    //% group="TFT" weight=68
+    //% group="TFT LCD" weight=68
     //% inlineInputMode=inline
     export function st7735DrawPixel(x: number, y: number, color: number): void {
         if (x < 0 || x >= _st7735Width || y < 0 || y >= _st7735Height) return
@@ -1328,7 +1328,7 @@ namespace AdvDisplays {
     //% block="ST7735 line draw (%x1,%y1) → (%x2,%y2)|color %color"
     //% x1.defl=0 y1.defl=0 x2.defl=50 y2.defl=50
     //% color.shadow="tftColorPicker"
-    //% group="TFT" weight=67
+    //% group="TFT LCD" weight=67
     //% inlineInputMode=inline
     export function st7735DrawLine(x1: number, y1: number, x2: number, y2: number, color: number): void {
         let dx = Math.abs(x2 - x1)
@@ -1350,7 +1350,7 @@ namespace AdvDisplays {
     //% x.defl=10 y.defl=10 w.defl=50 h.defl=30
     //% color.shadow="tftColorPicker"
     //% fill.shadow="toggleYesNo" fill.defl=false
-    //% group="TFT" weight=66
+    //% group="TFT LCD" weight=66
     //% inlineInputMode=inline
     export function st7735DrawRect(x: number, y: number, w: number, h: number, color: number, fill: boolean): void {
         if (fill) {
@@ -1378,7 +1378,7 @@ namespace AdvDisplays {
     //% block="ST7735 circle center (%cx,%cy) radius %r|color %color"
     //% cx.defl=64 cy.defl=80 r.defl=20
     //% color.shadow="tftColorPicker"
-    //% group="TFT" weight=65
+    //% group="TFT LCD" weight=65
     //% inlineInputMode=inline
     export function st7735DrawCircle(cx: number, cy: number, r: number, color: number): void {
         let x = r
@@ -1408,7 +1408,7 @@ namespace AdvDisplays {
     //% text.defl="Hello"
     //% x.defl=10 y.defl=10
     //% color.shadow="tftColorPicker"
-    //% group="TFT" weight=64
+    //% group="TFT LCD" weight=64
     //% inlineInputMode=inline
     export function st7735DrawText(text: string, x: number, y: number, color: number, size: TFTFontSize): void {
         let cursorX = x
@@ -1422,7 +1422,7 @@ namespace AdvDisplays {
     //% r.min=0 r.max=255 r.defl=255
     //% g.min=0 g.max=255 g.defl=0
     //% b.min=0 b.max=255 b.defl=0
-    //% group="TFT" weight=63
+    //% group="TFT LCD" weight=63
     export function tftRGB(r: number, g: number, b: number): number {
         // RGB888 → RGB565 변환
         return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3)
@@ -1435,14 +1435,14 @@ namespace AdvDisplays {
     //% color.fieldOptions.colours='["#000000","#FFFFFF","#FF0000","#00FF00","#0000FF","#FFFF00","#00FFFF","#FF00FF","#FFA500","#808080"]'
     //% color.fieldOptions.columns=5
     //% color.defl=0xFFFF
-    //% group="TFT" weight=62
+    //% group="TFT LCD" weight=62
     //% blockHidden=true
     export function tftColorPicker(color: number): number {
         return color
     }
 
     //% block="TFT color %color"
-    //% group="TFT" weight=61
+    //% group="TFT LCD" weight=61
     export function tftPresetColor(color: TFTColor): number {
         return color
     }
@@ -1572,7 +1572,7 @@ namespace AdvDisplays {
     //% cs.defl=DigitalPin.P16
     //% dc.defl=DigitalPin.P8
     //% rst.defl=DigitalPin.P12
-    //% group="TFT" weight=60
+    //% group="TFT LCD" weight=60
     //% inlineInputMode=inline
     export function ili9341Init(cs: DigitalPin, dc: DigitalPin, rst: DigitalPin, rotation: TFTRotation): void {
         _ili9341CS = cs
@@ -1629,7 +1629,7 @@ namespace AdvDisplays {
 
     //% block="ILI9341 screen fill color %color"
     //% color.shadow="tftColorPicker"
-    //% group="TFT" weight=59
+    //% group="TFT LCD" weight=59
     export function ili9341FillScreen(color: number): void {
         ili9341SetWindow(0, 0, _ili9341Width - 1, _ili9341Height - 1)
         ili9341WriteCmd(0x2C)
@@ -1653,7 +1653,7 @@ namespace AdvDisplays {
     //% x.min=0 x.defl=0
     //% y.min=0 y.defl=0
     //% color.shadow="tftColorPicker"
-    //% group="TFT" weight=58
+    //% group="TFT LCD" weight=58
     //% inlineInputMode=inline
     export function ili9341DrawPixel(x: number, y: number, color: number): void {
         if (x < 0 || x >= _ili9341Width || y < 0 || y >= _ili9341Height) return
@@ -1668,7 +1668,7 @@ namespace AdvDisplays {
     //% x.defl=10 y.defl=10 w.defl=50 h.defl=30
     //% color.shadow="tftColorPicker"
     //% fill.shadow="toggleYesNo" fill.defl=true
-    //% group="TFT" weight=57
+    //% group="TFT LCD" weight=57
     //% inlineInputMode=inline
     export function ili9341DrawRect(x: number, y: number, w: number, h: number, color: number, fill: boolean): void {
         if (fill) {
@@ -1702,7 +1702,7 @@ namespace AdvDisplays {
     //% text.defl="Hello"
     //% x.defl=10 y.defl=10
     //% color.shadow="tftColorPicker"
-    //% group="TFT" weight=56
+    //% group="TFT LCD" weight=56
     //% inlineInputMode=inline
     export function ili9341DrawText(text: string, x: number, y: number, color: number, size: TFTFontSize): void {
         let cursorX = x

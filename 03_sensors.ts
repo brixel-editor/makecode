@@ -42,13 +42,13 @@ namespace Sensors03 {
     let _dhtTempUnit: TempUnit = TempUnit.Celsius
 
     //% block="Last query successful?"
-    //% group="DHT11/DHT22" weight=110
+    //% group="온습도(DHT11/DHT22)" weight=110
     export function dhtLastQuerySuccessful(): boolean {
         return _dhtLastQuery
     }
 
     //% block="Read %readType"
-    //% group="DHT11/DHT22" weight=109
+    //% group="온습도(DHT11/DHT22)" weight=109
     export function dhtRead(readType: DHTReadType): number {
         if (readType == DHTReadType.Temperature) {
             if (_dhtTempUnit == TempUnit.Fahrenheit) {
@@ -64,7 +64,7 @@ namespace Sensors03 {
     //% pullUp.shadow="toggleYesNo" pullUp.defl=true
     //% serialOut.shadow="toggleYesNo" serialOut.defl=false
     //% wait.shadow="toggleYesNo" wait.defl=true
-    //% group="DHT11/DHT22" weight=108
+    //% group="온습도(DHT11/DHT22)" weight=108
     //% inlineInputMode=inline
     export function dhtQuery(dhtType: DHTType, pin: DigitalPin, pullUp: boolean, serialOut: boolean, wait: boolean): void {
         _dhtLastQuery = false
@@ -132,13 +132,13 @@ namespace Sensors03 {
     }
 
     //% block="Last query sensor responding?"
-    //% group="DHT11/DHT22" weight=107
+    //% group="온습도(DHT11/DHT22)" weight=107
     export function dhtSensorResponding(): boolean {
         return _dhtSensorResponding
     }
 
     //% block="Temperature type: %unit"
-    //% group="DHT11/DHT22" weight=106
+    //% group="온습도(DHT11/DHT22)" weight=106
     export function dhtSetTempUnit(unit: TempUnit): void {
         _dhtTempUnit = unit
     }
@@ -160,13 +160,13 @@ namespace Sensors03 {
     let _ds18b20Count: number = 0
 
     //% block="DS18B20 set data pin %pin"
-    //% group="DS18B20" weight=104
+    //% group="물온도(DS18B20)" weight=104
     export function ds18b20SetPin(pin: DigitalPin): void {
         _ds18b20Pin = pin
     }
 
     //% block="DS18B20 start conversion"
-    //% group="DS18B20" weight=103
+    //% group="물온도(DS18B20)" weight=103
     export function ds18b20StartConversion(): void {
         // 1-Wire 리셋
         pins.digitalWritePin(_ds18b20Pin, 0)
@@ -193,7 +193,7 @@ namespace Sensors03 {
 
     //% block="DS18B20 read sensor %index temperature (unit %unit)"
     //% index.min=0 index.max=7 index.defl=0
-    //% group="DS18B20" weight=102
+    //% group="물온도(DS18B20)" weight=102
     export function ds18b20ReadTemp(index: number, unit: DS18B20Unit): number {
         // 1-Wire 리셋
         pins.digitalWritePin(_ds18b20Pin, 0)
@@ -227,7 +227,7 @@ namespace Sensors03 {
     }
 
     //% block="DS18B20 connected sensor count"
-    //% group="DS18B20" weight=101
+    //% group="물온도(DS18B20)" weight=101
     export function ds18b20GetCount(): number {
         return _ds18b20Count
     }
@@ -271,7 +271,7 @@ namespace Sensors03 {
     /********** LM35 센서 **********/
 
     //% block="LM35 read temperature pin %pin unit %unit"
-    //% group="LM35" weight=97
+    //% group="온도(LM35)" weight=97
     export function lm35Read(pin: AnalogPin, unit: TempUnit): number {
         let tempC = pins.analogReadPin(pin) * 0.48828125
         if (unit == TempUnit.Fahrenheit) {
@@ -290,13 +290,13 @@ namespace Sensors03 {
 
     //% block="SHT30 init address %addr"
     //% addr.defl=0x44
-    //% group="SHT30" weight=96
+    //% group="온습도(I2C-SHT30)" weight=96
     export function sht30Init(addr: number): void {
         _sht30Addr = addr
     }
 
     //% block="SHT30 start measurement"
-    //% group="SHT30" weight=95
+    //% group="온습도(I2C-SHT30)" weight=95
     export function sht30Query(): void {
         // 측정 명령 전송 (Single Shot, High Repeatability)
         pins.i2cWriteNumber(_sht30Addr, 0x2400, NumberFormat.UInt16BE)
@@ -317,7 +317,7 @@ namespace Sensors03 {
     }
 
     //% block="SHT30 read temperature (unit %unit)"
-    //% group="SHT30" weight=94
+    //% group="온습도(I2C-SHT30)" weight=94
     export function sht30ReadTemp(unit: TempUnit): number {
         if (unit == TempUnit.Fahrenheit) {
             return _sht30Temperature * 9 / 5 + 32
@@ -326,7 +326,7 @@ namespace Sensors03 {
     }
 
     //% block="SHT30 read humidity"
-    //% group="SHT30" weight=93
+    //% group="온습도(I2C-SHT30)" weight=93
     export function sht30ReadHumidity(): number {
         return _sht30Humidity
     }
@@ -348,14 +348,14 @@ namespace Sensors03 {
 
     //% block="HC-SR04 set trigger pin %trig echo pin %echo"
     //% trig.defl=DigitalPin.P7 echo.defl=DigitalPin.P8
-    //% group="HC-SR04" weight=92
+    //% group="초음파(HC-SR04)" weight=92
     export function hcsr04SetPins(trig: DigitalPin, echo: DigitalPin): void {
         _hcsr04Trig = trig
         _hcsr04Echo = echo
     }
 
     //% block="HC-SR04 read distance unit %unit"
-    //% group="HC-SR04" weight=91
+    //% group="초음파(HC-SR04)" weight=91
     export function hcsr04Read(unit: DistanceUnit): number {
         pins.digitalWritePin(_hcsr04Trig, 0)
         control.waitMicros(2)
@@ -415,13 +415,13 @@ namespace Sensors03 {
 
     //% block="VL53L0X init I2C address %addr"
     //% addr.defl=41
-    //% group="VL53L0X" weight=89
+    //% group="거리센서(VL53L0X)" weight=89
     export function vl53l0xInit(addr: number): void {
         _vl53l0xAddr = addr
     }
 
     //% block="VL53L0X set mode | mode %mode | precision %precision"
-    //% group="VL53L0X" weight=88
+    //% group="거리센서(VL53L0X)" weight=88
     export function vl53l0xSetMode(mode: VL53L0XMode, precision: VL53L0XPrecision): void {
         _vl53l0xMode = mode
         _vl53l0xPrecision = precision
@@ -434,7 +434,7 @@ namespace Sensors03 {
     }
 
     //% block="VL53L0X control %control"
-    //% group="VL53L0X" weight=87
+    //% group="거리센서(VL53L0X)" weight=87
     export function vl53l0xControl(control: VL53L0XControl): void {
         if (control == VL53L0XControl.Start) {
             // 측정 시작 명령
@@ -450,7 +450,7 @@ namespace Sensors03 {
     }
 
     //% block="VL53L0X read %readType"
-    //% group="VL53L0X" weight=86
+    //% group="거리센서(VL53L0X)" weight=86
     export function vl53l0xRead(readType: VL53L0XReadType): number {
         if (readType == VL53L0XReadType.Distance) {
             return _vl53l0xDistance
@@ -462,7 +462,7 @@ namespace Sensors03 {
     /********** GP2Y0A21YK 적외선 거리 센서 **********/
 
     //% block="GP2Y0A21YK read distance pin %pin unit %unit"
-    //% group="GP2Y0A21YK" weight=85
+    //% group="미세먼지(GP2Y0A21YK)" weight=85
     export function gp2y0a21ykRead(pin: AnalogPin, unit: DistanceUnit): number {
         let v = pins.analogReadPin(pin)
         let cm = Math.floor(12343.85 / (v - 0.42))
@@ -481,14 +481,14 @@ namespace Sensors03 {
 
     //% block="US-100 set trigger pin %trig echo pin %echo"
     //% trig.defl=DigitalPin.P1 echo.defl=DigitalPin.P2
-    //% group="US-100" weight=84
+    //% group="초음파(US-100)" weight=84
     export function us100SetPins(trig: DigitalPin, echo: DigitalPin): void {
         _us100Trig = trig
         _us100Echo = echo
     }
 
     //% block="US-100 distance measure unit %unit"
-    //% group="US-100" weight=83
+    //% group="초음파(US-100)" weight=83
     export function us100Read(unit: DistanceUnit): number {
         pins.digitalWritePin(_us100Trig, 0)
         control.waitMicros(2)
@@ -512,7 +512,7 @@ namespace Sensors03 {
 
     //% block="BH1750 init address %addr"
     //% addr.defl=0x23
-    //% group="BH1750" weight=80
+    //% group="조도(BH1750)" weight=80
     export function bh1750Init(addr: number): void {
         _bh1750Addr = addr
         // Power On
@@ -523,7 +523,7 @@ namespace Sensors03 {
     }
 
     //% block="BH1750 light intensity read (lux)"
-    //% group="BH1750" weight=79
+    //% group="조도(BH1750)" weight=79
     export function bh1750Read(): number {
         let buf = pins.i2cReadBuffer(_bh1750Addr, 2)
         let raw = (buf[0] << 8) | buf[1]
@@ -534,7 +534,7 @@ namespace Sensors03 {
     /********** TEMT6000 조도 센서 **********/
 
     //% block="TEMT6000 light intensity read pin %pin"
-    //% group="TEMT6000" weight=78
+    //% group="빛(TEMT6000)" weight=78
     export function temt6000Read(pin: AnalogPin): number {
         return pins.analogReadPin(pin)
     }
@@ -547,7 +547,7 @@ namespace Sensors03 {
 
     //% block="TSL2561 init address %addr"
     //% addr.defl=0x39
-    //% group="TSL2561" weight=77
+    //% group="조도(TSL2561)" weight=77
     export function tsl2561Init(addr: number): void {
         _tsl2561Addr = addr
         // Power On (Command + Control Register)
@@ -557,7 +557,7 @@ namespace Sensors03 {
     }
 
     //% block="TSL2561 light intensity read (lux)"
-    //% group="TSL2561" weight=76
+    //% group="조도(TSL2561)" weight=76
     export function tsl2561Read(): number {
         // CH0 읽기 (Command + Word + CH0 Data)
         pins.i2cWriteNumber(_tsl2561Addr, 0xAC, NumberFormat.UInt8BE)
@@ -684,7 +684,7 @@ namespace Sensors03 {
     /********** MQ-2 가스 센서 **********/
 
     //% block="MQ-2 gas concentration read pin %pin"
-    //% group="MQ-2" weight=50
+    //% group="가스(MQ-2)" weight=50
     export function mq2Read(pin: AnalogPin): number {
         return pins.analogReadPin(pin)
     }
@@ -693,7 +693,7 @@ namespace Sensors03 {
     /********** MQ-135 공기질 센서 **********/
 
     //% block="MQ-135 air quality read pin %pin"
-    //% group="MQ-135" weight=49
+    //% group="가스(MQ-135)" weight=49
     export function mq135Read(pin: AnalogPin): number {
         return pins.analogReadPin(pin)
     }
@@ -715,7 +715,7 @@ namespace Sensors03 {
     let _ccs811TVOC: number = 0
 
     //% block="CCS811 init"
-    //% group="CCS811" weight=48
+    //% group="CO2센서(CCS811)" weight=48
     export function ccs811Init(): void {
         // 앱 시작 명령
         pins.i2cWriteNumber(_ccs811Addr, 0xF4, NumberFormat.UInt8BE)
@@ -726,7 +726,7 @@ namespace Sensors03 {
     }
 
     //% block="CCS811 read %ctype"
-    //% group="CCS811" weight=47
+    //% group="CO2센서(CCS811)" weight=47
     export function ccs811Read(ctype: CCS811Type): number {
         // 결과 레지스터 읽기
         pins.i2cWriteNumber(_ccs811Addr, 0x02, NumberFormat.UInt8BE)
@@ -758,7 +758,7 @@ namespace Sensors03 {
     let _sgp30TVOC: number = 0
 
     //% block="SGP30 init"
-    //% group="SGP30" weight=46
+    //% group="CO2센서(SGP30)" weight=46
     export function sgp30Init(): void {
         // IAQ 초기화 명령
         pins.i2cWriteNumber(_sgp30Addr, 0x2003, NumberFormat.UInt16BE)
@@ -766,7 +766,7 @@ namespace Sensors03 {
     }
 
     //% block="SGP30 measure run"
-    //% group="SGP30" weight=45
+    //% group="CO2센서(SGP30)" weight=45
     export function sgp30Measure(): void {
         // IAQ 측정 명령
         pins.i2cWriteNumber(_sgp30Addr, 0x2008, NumberFormat.UInt16BE)
@@ -780,7 +780,7 @@ namespace Sensors03 {
     }
 
     //% block="SGP30 read %stype"
-    //% group="SGP30" weight=44
+    //% group="CO2센서(SGP30)" weight=44
     export function sgp30Read(stype: SGP30Type): number {
         if (stype == SGP30Type.eCO2) {
             return _sgp30eCO2
@@ -846,7 +846,7 @@ namespace Sensors03 {
     //% rx.defl=SerialPin.P2
     //% tx.defl=SerialPin.P1
     //% baud.defl=9600
-    //% group="PMS" weight=50
+    //% group="미세먼지(PMS)" weight=50
     //% inlineInputMode=inline
     export function pmsInit(serialType: PMSSerial, rx: SerialPin, tx: SerialPin, baud: number): void {
         _pmsRx = rx
@@ -859,7 +859,7 @@ namespace Sensors03 {
 
     //% block="PMS PM sensor power %power"
     //% power.defl=PMSPower.Wakeup
-    //% group="PMS" weight=49
+    //% group="미세먼지(PMS)" weight=49
     export function pmsPower(power: PMSPower): void {
         if (power == PMSPower.Sleep) {
             // 슬립 명령: 42 4D E4 00 00 01 73
@@ -889,7 +889,7 @@ namespace Sensors03 {
 
     //% block="PMS PM sensor mode %mode"
     //% mode.defl=PMSMode.Active
-    //% group="PMS" weight=48
+    //% group="미세먼지(PMS)" weight=48
     export function pmsSetMode(mode: PMSMode): void {
         if (mode == PMSMode.Passive) {
             // 패시브 모드: 42 4D E1 00 00 01 70
@@ -918,14 +918,14 @@ namespace Sensors03 {
 
     //% block="PMS PM sensor read %dtype"
     //% dtype.defl=PMSDataType.PM2_5_STD
-    //% group="PMS" weight=47
+    //% group="미세먼지(PMS)" weight=47
     export function pmsRead(dtype: PMSDataType): number {
         pmsParseData()
         return _pmsData[dtype]
     }
 
     //% block="PMS PM sensor request read"
-    //% group="PMS" weight=46
+    //% group="미세먼지(PMS)" weight=46
     export function pmsRequestRead(): void {
         // 수동 읽기 요청: 42 4D E2 00 00 01 71
         let cmd = pins.createBuffer(7)
@@ -940,7 +940,7 @@ namespace Sensors03 {
     }
 
     //% block="PMS PM sensor data ready"
-    //% group="PMS" weight=45
+    //% group="미세먼지(PMS)" weight=45
     export function pmsDataReady(): boolean {
         pmsParseData()
         return _pmsReady
@@ -1066,7 +1066,7 @@ namespace Sensors03 {
     //% rx.defl=SerialPin.P2
     //% tx.defl=SerialPin.P1
     //% baud.defl=9600
-    //% group="MHZ19" weight=38
+    //% group="CO2센서(MHZ19)" weight=38
     //% inlineInputMode=inline
     export function mhz19Init(serialType: MHZ19Serial, rx: SerialPin, tx: SerialPin, baud: number): void {
         _mhz19Rx = rx
@@ -1077,7 +1077,7 @@ namespace Sensors03 {
 
     //% block="MHZ19 set range: %range ppm"
     //% range.defl=MHZ19Range.Range2000
-    //% group="MHZ19" weight=37
+    //% group="CO2센서(MHZ19)" weight=37
     export function mhz19SetRange(range: MHZ19Range): void {
         _mhz19Range = range
         // 범위 설정 명령: FF 01 99 00 00 00 [범위H] [범위L] [체크섬]
@@ -1098,7 +1098,7 @@ namespace Sensors03 {
     //% block="MHZ19 filter mode %filter, type %filterType"
     //% filter.defl=MHZ19Filter.On
     //% filterType.defl=MHZ19FilterType.Clear
-    //% group="MHZ19" weight=36
+    //% group="CO2센서(MHZ19)" weight=36
     //% inlineInputMode=inline
     export function mhz19SetFilter(filter: MHZ19Filter, filterType: MHZ19FilterType): void {
         // 필터 설정은 소프트웨어적으로 처리 (MHZ19B에서는 직접 지원 안함)
@@ -1107,7 +1107,7 @@ namespace Sensors03 {
 
     //% block="MHZ19 read: %dtype"
     //% dtype.defl=MHZ19DataType.CO2
-    //% group="MHZ19" weight=35
+    //% group="CO2센서(MHZ19)" weight=35
     export function mhz19Read(dtype: MHZ19DataType): number {
         // CO2 읽기 명령: FF 01 86 00 00 00 00 00 79
         let cmd = pins.createBuffer(9)
@@ -1144,7 +1144,7 @@ namespace Sensors03 {
     //% block="MHZ19 %autoCal period(hour): %hours"
     //% autoCal.defl=MHZ19AutoCal.On
     //% hours.defl=24 hours.min=0 hours.max=720
-    //% group="MHZ19" weight=34
+    //% group="CO2센서(MHZ19)" weight=34
     //% inlineInputMode=inline
     export function mhz19SetAutoCal(autoCal: MHZ19AutoCal, hours: number): void {
         _mhz19AutoCal = (autoCal == MHZ19AutoCal.On)
@@ -1166,7 +1166,7 @@ namespace Sensors03 {
 
     //% block="MHZ19 status read: %status"
     //% status.defl=MHZ19Status.Range
-    //% group="MHZ19" weight=33
+    //% group="CO2센서(MHZ19)" weight=33
     export function mhz19GetStatus(status: MHZ19Status): number {
         if (status == MHZ19Status.Range) {
             return _mhz19Range
@@ -1218,7 +1218,7 @@ namespace Sensors03 {
     //% dout.defl=DigitalPin.P0
     //% clk.defl=DigitalPin.P1
     //% gain.defl=HX711Gain.Gain128
-    //% group="HX711" weight=43
+    //% group="무게(HX711)" weight=43
     //% inlineInputMode=inline
     export function hx711Init(dout: DigitalPin, clk: DigitalPin, gain: HX711Gain): void {
         _hx711Dout = dout
@@ -1235,7 +1235,7 @@ namespace Sensors03 {
     }
 
     //% block="HX711 weight sensor read weight"
-    //% group="HX711" weight=42
+    //% group="무게(HX711)" weight=42
     export function hx711ReadWeight(): number {
         let raw = hx711ReadRaw()
         return (raw - _hx711Offset) / _hx711Scale
@@ -1243,7 +1243,7 @@ namespace Sensors03 {
 
     //% block="HX711 weight sensor tare %times times"
     //% times.defl=10 times.min=1 times.max=50
-    //% group="HX711" weight=41
+    //% group="무게(HX711)" weight=41
     export function hx711Tare(times: number): void {
         let sum = 0
         for (let i = 0; i < times; i++) {
@@ -1255,7 +1255,7 @@ namespace Sensors03 {
 
     //% block="HX711 weight sensor set scale %scale"
     //% scale.defl=1
-    //% group="HX711" weight=40
+    //% group="무게(HX711)" weight=40
     export function hx711SetScale(scale: number): void {
         if (scale != 0) {
             _hx711Scale = scale
@@ -1263,14 +1263,14 @@ namespace Sensors03 {
     }
 
     //% block="HX711 weight sensor is ready"
-    //% group="HX711" weight=39
+    //% group="무게(HX711)" weight=39
     export function hx711IsReady(): boolean {
         return pins.digitalReadPin(_hx711Dout) == 0
     }
 
     //% block="HX711 weight sensor power %state"
     //% state.shadow="toggleOnOff"
-    //% group="HX711" weight=38
+    //% group="무게(HX711)" weight=38
     export function hx711Power(state: boolean): void {
         if (state) {
             // 전원 켜기
@@ -1284,7 +1284,7 @@ namespace Sensors03 {
 
     //% block="HX711 weight sensor read %dtype"
     //% dtype.defl=HX711DataType.Weight
-    //% group="HX711" weight=37
+    //% group="무게(HX711)" weight=37
     export function hx711Read(dtype: HX711DataType): number {
         if (dtype == HX711DataType.Raw) {
             return hx711ReadRaw()
@@ -1367,7 +1367,7 @@ namespace Sensors03 {
 
     //% block="TDS sensor(GravityTDS) setup: pin %pin"
     //% pin.defl=AnalogPin.P0
-    //% group="TDS" weight=32
+    //% group="전기전도도(TDS)" weight=32
     export function tdsInit(pin: AnalogPin): void {
         _tdsPin = pin
         _tdsTemperature = 25
@@ -1378,13 +1378,13 @@ namespace Sensors03 {
 
     //% block="TDS sensor temp compensation: %temperature °C"
     //% temperature.defl=25 temperature.min=0 temperature.max=50
-    //% group="TDS" weight=31
+    //% group="전기전도도(TDS)" weight=31
     export function tdsSetTemperature(temperature: number): void {
         _tdsTemperature = temperature
     }
 
     //% block="TDS sensor update"
-    //% group="TDS" weight=30
+    //% group="전기전도도(TDS)" weight=30
     export function tdsUpdate(): void {
         // 아날로그 값 읽기 (여러 번 읽어서 평균)
         let analogSum = 0
@@ -1417,7 +1417,7 @@ namespace Sensors03 {
 
     //% block="TDS sensor read: %dtype"
     //% dtype.defl=TDSDataType.TDS
-    //% group="TDS" weight=29
+    //% group="전기전도도(TDS)" weight=29
     export function tdsRead(dtype: TDSDataType): number {
         if (dtype == TDSDataType.TDS) {
             return Math.round(_tdsTDSValue)
@@ -1430,7 +1430,7 @@ namespace Sensors03 {
     //% block="TDS sensor advanced %setting value: %value"
     //% setting.defl=TDSAdvanced.RefVoltage
     //% value.defl=3.3
-    //% group="TDS" weight=28
+    //% group="전기전도도(TDS)" weight=28
     //% inlineInputMode=inline
     export function tdsSetAdvanced(setting: TDSAdvanced, value: number): void {
         if (setting == TDSAdvanced.RefVoltage) {
@@ -1573,7 +1573,7 @@ namespace Sensors03 {
 
     //% block="Turbidity sensor setup: analog pin %pin"
     //% pin.defl=AnalogPin.P0
-    //% group="Turbidity" weight=23
+    //% group="탁도(Turbidity)" weight=23
     export function turbidityInit(pin: AnalogPin): void {
         _turbidityPin = pin
         _turbidityRefVoltage = 3.3
@@ -1581,7 +1581,7 @@ namespace Sensors03 {
     }
 
     //% block="Turbidity sensor calibrate (clear water)"
-    //% group="Turbidity" weight=22
+    //% group="탁도(Turbidity)" weight=22
     export function turbidityCalibrate(): void {
         // 맑은 물에서 전압 측정하여 보정값 저장
         let analogSum = 0
@@ -1594,7 +1594,7 @@ namespace Sensors03 {
     }
 
     //% block="Turbidity sensor update"
-    //% group="Turbidity" weight=21
+    //% group="탁도(Turbidity)" weight=21
     export function turbidityUpdate(): void {
         // 값 읽기는 turbidityRead에서 직접 수행
         // 이 블록은 호환성을 위해 제공
@@ -1602,7 +1602,7 @@ namespace Sensors03 {
 
     //% block="Turbidity sensor read: %dtype"
     //% dtype.defl=TurbidityDataType.NTU
-    //% group="Turbidity" weight=20
+    //% group="탁도(Turbidity)" weight=20
     export function turbidityRead(dtype: TurbidityDataType): number {
         // 아날로그 값 읽기 (여러 번 읽어서 평균)
         let analogSum = 0

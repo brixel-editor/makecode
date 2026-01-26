@@ -289,7 +289,7 @@ namespace Displays01 {
     //% block="NeoPixel pin %pin|LED count %numLeds|format %mode"
     //% pin.defl=DigitalPin.P0
     //% numLeds.defl=24 numLeds.min=1 numLeds.max=300
-    //% group="NeoPixel" weight=100
+    //% group="네오픽셀(NeoPixel)" weight=100
     //% blockSetVariable=strip
     export function neopixelCreate(pin: DigitalPin, numLeds: number, mode: NeoPixelFormat): NeoPixelStrip {
         let strip = new NeoPixelStrip()
@@ -308,7 +308,7 @@ namespace Displays01 {
     //% block="%strip|range start %start|count %length set to"
     //% strip.shadow="variables_get" strip.defl="strip"
     //% start.defl=0 length.defl=4
-    //% group="NeoPixel" weight=99
+    //% group="네오픽셀(NeoPixel)" weight=99
     //% blockSetVariable=range
     export function neopixelRange(strip: NeoPixelStrip, start: number, length: number): NeoPixelStrip {
         return strip.range(start, length)
@@ -317,7 +317,7 @@ namespace Displays01 {
     //% block="%strip|rainbow show color %startHue from %endHue to"
     //% strip.shadow="variables_get" strip.defl="strip"
     //% startHue.defl=1 endHue.defl=360
-    //% group="NeoPixel" weight=98
+    //% group="네오픽셀(NeoPixel)" weight=98
     export function neopixelShowRainbow(strip: NeoPixelStrip, startHue: number, endHue: number): void {
         strip.showRainbow(startHue, endHue)
     }
@@ -325,7 +325,7 @@ namespace Displays01 {
     //% block="%strip|color %color show"
     //% strip.shadow="variables_get" strip.defl="strip"
     //% color.shadow="neopixelColorPicker"
-    //% group="NeoPixel" weight=97
+    //% group="네오픽셀(NeoPixel)" weight=97
     export function neopixelShowColor(strip: NeoPixelStrip, color: number): void {
         strip.showColor(color)
     }
@@ -333,21 +333,21 @@ namespace Displays01 {
     //% block="%strip|bar graph value %value|max %high"
     //% strip.shadow="variables_get" strip.defl="strip"
     //% value.defl=0 high.defl=255
-    //% group="NeoPixel" weight=96
+    //% group="네오픽셀(NeoPixel)" weight=96
     export function neopixelShowBarGraph(strip: NeoPixelStrip, value: number, high: number): void {
         strip.showBarGraph(value, high)
     }
 
     //% block="%strip|refresh"
     //% strip.shadow="variables_get" strip.defl="strip"
-    //% group="NeoPixel" weight=95
+    //% group="네오픽셀(NeoPixel)" weight=95
     export function neopixelShow(strip: NeoPixelStrip): void {
         strip.show()
     }
 
     //% block="%strip|clear all"
     //% strip.shadow="variables_get" strip.defl="strip"
-    //% group="NeoPixel" weight=94
+    //% group="네오픽셀(NeoPixel)" weight=94
     export function neopixelClear(strip: NeoPixelStrip): void {
         strip.clear()
     }
@@ -355,7 +355,7 @@ namespace Displays01 {
     //% block="%strip|pixel %offset shift"
     //% strip.shadow="variables_get" strip.defl="strip"
     //% offset.defl=1
-    //% group="NeoPixel" weight=93
+    //% group="네오픽셀(NeoPixel)" weight=93
     export function neopixelShift(strip: NeoPixelStrip, offset: number): void {
         strip.shift(offset)
     }
@@ -363,7 +363,7 @@ namespace Displays01 {
     //% block="%strip|pixel %offset rotate"
     //% strip.shadow="variables_get" strip.defl="strip"
     //% offset.defl=1
-    //% group="NeoPixel" weight=92
+    //% group="네오픽셀(NeoPixel)" weight=92
     export function neopixelRotate(strip: NeoPixelStrip, offset: number): void {
         strip.rotate(offset)
     }
@@ -371,7 +371,7 @@ namespace Displays01 {
     //% block="%strip|brightness %brightness set"
     //% strip.shadow="variables_get" strip.defl="strip"
     //% brightness.min=0 brightness.max=255 brightness.defl=128
-    //% group="NeoPixel" weight=91
+    //% group="네오픽셀(NeoPixel)" weight=91
     export function neopixelSetBrightness(strip: NeoPixelStrip, brightness: number): void {
         strip.setBrightness(brightness)
     }
@@ -379,7 +379,7 @@ namespace Displays01 {
     //% block="%strip|pixel %index at color %color set"
     //% strip.shadow="variables_get" strip.defl="strip"
     //% color.shadow="neopixelColorPicker"
-    //% group="NeoPixel" weight=90
+    //% group="네오픽셀(NeoPixel)" weight=90
     export function neopixelSetPixelColor(strip: NeoPixelStrip, index: number, color: number): void {
         strip.setPixelColor(index, color)
     }
@@ -388,7 +388,7 @@ namespace Displays01 {
     //% h.min=0 h.max=360 h.defl=0
     //% s.min=0 s.max=100 s.defl=100
     //% l.min=0 l.max=100 l.defl=50
-    //% group="TM1637" weight=85
+    //% group="숫자표시장치(TM1637)" weight=85
     export function neopixelHSL(h: number, s: number, l: number): number {
         h = h % 360
         s = Math.clamp(0, 100, s) / 100
@@ -417,7 +417,7 @@ namespace Displays01 {
     //% r.min=0 r.max=255 r.defl=255
     //% g.min=0 g.max=255 g.defl=0
     //% b.min=0 b.max=255 b.defl=0
-    //% group="NeoPixel" weight=88
+    //% group="네오픽셀(NeoPixel)" weight=88
     export function neopixelRGB(r: number, g: number, b: number): number {
         return ((r & 0xFF) << 16) | ((g & 0xFF) << 8) | (b & 0xFF)
     }
@@ -429,14 +429,14 @@ namespace Displays01 {
     //% color.fieldOptions.colours='["#ff0000","#ffa500","#ffff00","#00ff00","#00ffff","#0000ff","#ff00ff","#ffffff","#000000"]'
     //% color.fieldOptions.columns=3
     //% color.defl=0xff0000
-    //% group="NeoPixel" weight=88
+    //% group="네오픽셀(NeoPixel)" weight=88
     //% blockHidden=true
     export function neopixelColorPicker(color: number): number {
         return color
     }
 
     //% block="color %color"
-    //% group="NeoPixel" weight=88
+    //% group="네오픽셀(NeoPixel)" weight=88
     export function neopixelPresetColor(color: NeoPixelColors): number {
         return color
     }
@@ -502,7 +502,7 @@ namespace Displays01 {
 
     //% block="FND(TM1637) CLK pin %clk|DATA pin %dio set"
     //% clk.defl=DigitalPin.P2 dio.defl=DigitalPin.P3
-    //% group="TM1637" weight=88
+    //% group="숫자표시장치(TM1637)" weight=88
     //% inlineInputMode=inline
     export function tm1637Init(clk: DigitalPin, dio: DigitalPin): void {
         _tm1637Clk = clk
@@ -522,7 +522,7 @@ namespace Displays01 {
 
     //% block="FNDnumber show %num|%decimal|%negative"
     //% num.defl=1234
-    //% group="TM1637" weight=87
+    //% group="숫자표시장치(TM1637)" weight=87
     //% inlineInputMode=inline
     export function tm1637ShowNumber(num: number, decimal: TM1637Decimal, negative: TM1637Negative): void {
         let isNegative = num < 0
@@ -574,7 +574,7 @@ namespace Displays01 {
     //% block="FNDtime show %hour|: %minute|%colon show"
     //% hour.min=0 hour.max=23 hour.defl=12
     //% minute.min=0 minute.max=59 minute.defl=30
-    //% group="TM1637" weight=86
+    //% group="숫자표시장치(TM1637)" weight=86
     //% inlineInputMode=inline
     export function tm1637ShowTime(hour: number, minute: number, colon: TM1637Colon): void {
         _tm1637Buffer[0] = TM1637_FONT[Math.floor(hour / 10)]
@@ -593,7 +593,7 @@ namespace Displays01 {
     //% block="FND text show %text |scroll delay %delay ms"
     //% text.defl="Hello"
     //% delay.defl=500 delay.min=100 delay.max=2000
-    //% group="TM1637" weight=85
+    //% group="숫자표시장치(TM1637)" weight=85
     //% inlineInputMode=inline
     export function tm1637ShowText(text: string, delay: number): void {
         text = text.toUpperCase()
@@ -624,7 +624,7 @@ namespace Displays01 {
 
     //% block="FND position %pos|at number %digit show"
     //% digit.min=0 digit.max=9 digit.defl=8
-    //% group="TM1637" weight=84
+    //% group="숫자표시장치(TM1637)" weight=84
     //% inlineInputMode=inline
     export function tm1637ShowDigitAt(pos: TM1637Position, digit: number): void {
         _tm1637Buffer[pos] = TM1637_FONT[digit % 10]
@@ -632,7 +632,7 @@ namespace Displays01 {
     }
 
     //% block="FNDscreen clear"
-    //% group="TM1637" weight=83
+    //% group="숫자표시장치(TM1637)" weight=83
     export function tm1637Clear(): void {
         _tm1637Buffer = [0, 0, 0, 0]
         tm1637Display()
@@ -640,7 +640,7 @@ namespace Displays01 {
 
     //% block="FNDbrightness set %brightness"
     //% brightness.min=0 brightness.max=7 brightness.defl=7
-    //% group="TM1637" weight=79
+    //% group="숫자표시장치(TM1637)" weight=79
     export function tm1637SetBrightness(brightness: number): void {
         _tm1637Brightness = Math.clamp(0, 7, brightness)
 
@@ -654,7 +654,7 @@ namespace Displays01 {
     }
 
     //% block="FNDcolon %colon show"
-    //% group="TM1637" weight=78
+    //% group="숫자표시장치(TM1637)" weight=78
     export function tm1637SetColon(colon: TM1637Colon): void {
         _tm1637Colon = (colon == TM1637Colon.Colon)
         if (_tm1637Colon) {
