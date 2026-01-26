@@ -9,7 +9,6 @@
     "dependencies": {
         "core": "*",
         "bluetooth": "*",
-        "serial": "*",
         "microbit": "*"
     },
     "files": [

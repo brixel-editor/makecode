@@ -12,4 +12,5 @@
  * - 07_communications.ts: EEPROM, nRF24L01, LoRa, Bluetooth, GPS
  * - 08_wifi.ts          : ESP8266/ESP32 WiFi, WebSocket
  * - 09_usb_serial.ts    : USB Serial communication
+ * - 10_bluetooth.ts    : bluetooth communication
  */
