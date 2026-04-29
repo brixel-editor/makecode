@@ -4,494 +4,453 @@
  */
 
 //% weight=1040 color=#F75ACF icon="\uf1eb" block="07. Communications"
-//% groups="['Infrared', 'MFRC522', 'PN532', 'GPS', 'nRF24L01', 'LoRa']"
+//% groups="['RF433MHz', 'Infrared', 'PN532', 'GPS', 'MFRC522', 'nRF24L01', 'LoRa']"
 namespace Communications07 {
 
 
+    /********** RF433MHz Wireless Module **********/
 
-    /********** nRF24L01 2.4GHz 무선 모듈 **********/
+    // RF433MHz is a simple low-cost wireless module
+    // Typically uses ASK/OOK modulation
+    // Range: ~20-200m depending on environment
 
-    // nRF24L01은 2.4GHz 대역의 무선 통신 모듈입니다.
-    // 최대 2Mbps 속도, 최대 100m 거리 통신 가능
-    // micro:bit 간 또는 아두이노와 통신할 때 사용
+    // RF433MHz variables
+    let _rf433TxPin: DigitalPin = DigitalPin.P12
+    let _rf433RxPin: DigitalPin = DigitalPin.P11
+    let _rf433BitTime: number = 500  // microseconds per bit (2000 bps default)
+    let _rf433RxBuffer: string = ""
+    let _rf433DataReady: boolean = false
+    let _rf433Receiving: boolean = false
 
-    // nRF24L01 핀 저장 변수
-    let _nrfCE: DigitalPin = DigitalPin.P8
-    let _nrfCSN: DigitalPin = DigitalPin.P16
-    let _nrfChannel: number = 76
-    let _nrfPayloadSize: number = 32
-    let _nrfDataReceived: boolean = false
-    let _nrfRxBuffer: number[] = []
-
-    // nRF24L01 모드
-    export enum NRFMode {
-        //% block="TX (TX)"
-        Transmit = 0,
-        //% block="receive (RX)"
-        Receive = 1
-    }
-
-    // nRF24L01 전송 속도
-    export enum NRFDataRate {
-        //% block="1Mbps"
-        Rate1Mbps = 0,
-        //% block="2Mbps"
-        Rate2Mbps = 1,
-        //% block="250Kbps"
-        Rate250Kbps = 2
-    }
-
-    // nRF24L01 출력 세기
-    export enum NRFPower {
-        //% block="max (0dBm)"
-        Max = 3,
-        //% block="high (-6dBm)"
-        High = 2,
-        //% block="medium (-12dBm)"
-        Medium = 1,
-        //% block="low (-18dBm)"
-        Low = 0
-    }
-
-    //% block="nRF24L01 set|CE pin %ce|CSN pin %csn|channel %channel"
-    //% ce.defl=DigitalPin.P8
-    //% csn.defl=DigitalPin.P16
-    //% channel.defl=76 channel.min=0 channel.max=125
-    //% group="nRF24L01" weight=77
+    /**
+     * RF433MHz transmit data on specified pin
+     * @param pin TX pin
+     * @param data data to transmit
+     */
+    //% block="RF433MHz TX pin %pin , %data data transmit"
+    //% pin.defl=DigitalPin.P12
+    //% data.defl="Gorillacell"
+    //% group="RF433MHz" weight=99
     //% inlineInputMode=inline
-    export function nrf24l01Init(ce: DigitalPin, csn: DigitalPin, channel: number): void {
-        _nrfCE = ce
-        _nrfCSN = csn
-        _nrfChannel = channel
+    export function rf433Transmit(pin: DigitalPin, data: string): void {
+        _rf433TxPin = pin
 
-        // 핀 초기화
-        pins.digitalWritePin(_nrfCE, 0)
-        pins.digitalWritePin(_nrfCSN, 1)
+        // Send preamble (sync pattern)
+        for (let i = 0; i < 8; i++) {
+            pins.digitalWritePin(pin, 1)
+            control.waitMicros(_rf433BitTime)
+            pins.digitalWritePin(pin, 0)
+            control.waitMicros(_rf433BitTime)
+        }
 
-        basic.pause(100)
+        // Send start bits (1100)
+        pins.digitalWritePin(pin, 1)
+        control.waitMicros(_rf433BitTime)
+        pins.digitalWritePin(pin, 1)
+        control.waitMicros(_rf433BitTime)
+        pins.digitalWritePin(pin, 0)
+        control.waitMicros(_rf433BitTime)
+        pins.digitalWritePin(pin, 0)
+        control.waitMicros(_rf433BitTime)
 
-        // 레지스터 초기화
-        nrfWriteReg(0x00, 0x0C)  // CONFIG: CRC 활성화, PWR_UP
-        nrfWriteReg(0x01, 0x3F)  // EN_AA: 자동 ACK 활성화
-        nrfWriteReg(0x02, 0x03)  // EN_RXADDR: 파이프 0,1 활성화
-        nrfWriteReg(0x03, 0x03)  // SETUP_AW: 5바이트 주소
-        nrfWriteReg(0x04, 0x03)  // SETUP_RETR: 재전송 설정
-        nrfWriteReg(0x05, channel) // RF_CH: 채널 설정
-        nrfWriteReg(0x06, 0x07)  // RF_SETUP: 1Mbps, 0dBm
-        nrfWriteReg(0x11, _nrfPayloadSize)  // RX_PW_P0
+        // Send length byte
+        rf433SendByte(pin, data.length)
 
-        // FIFO 클리어
-        nrfFlushTx()
-        nrfFlushRx()
-        nrfWriteReg(0x07, 0x70)  // STATUS: 플래그 클리어
+        // Send data bytes
+        for (let i = 0; i < data.length; i++) {
+            rf433SendByte(pin, data.charCodeAt(i))
+        }
 
-        basic.pause(10)
+        // Send checksum
+        let checksum = data.length
+        for (let i = 0; i < data.length; i++) {
+            checksum ^= data.charCodeAt(i)
+        }
+        rf433SendByte(pin, checksum)
+
+        // End transmission
+        pins.digitalWritePin(pin, 0)
     }
 
-    //% block="nRF24L01 mode set %mode"
-    //% group="nRF24L01" weight=76
-    export function nrf24l01SetMode(mode: NRFMode): void {
-        let config = nrfReadReg(0x00)
-        if (mode == NRFMode.Receive) {
-            config |= 0x01  // PRIM_RX = 1
-            nrfWriteReg(0x00, config)
-            pins.digitalWritePin(_nrfCE, 1)  // RX 모드 시작
+    /**
+     * RF433MHz receiver setup
+     * @param pin RX pin
+     * @param baudRate baud rate (bits per second)
+     */
+    //% block="RF433MHz RX pin %pin , baud rate %baudRate setup"
+    //% pin.defl=DigitalPin.P11
+    //% baudRate.defl=2000
+    //% group="RF433MHz" weight=98
+    //% inlineInputMode=inline
+    export function rf433ReceiverSetup(pin: DigitalPin, baudRate: number): void {
+        _rf433RxPin = pin
+        _rf433BitTime = Math.floor(1000000 / baudRate)  // Convert to microseconds
+        _rf433RxBuffer = ""
+        _rf433DataReady = false
+        _rf433Receiving = false
+
+        pins.setPull(pin, PinPullMode.PullDown)
+    }
+
+    /**
+     * RF433MHz 1. Prepare to store received data in buffer
+     */
+    //% block="RF433MHz 1. prepare to store received data in buffer"
+    //% group="RF433MHz" weight=97
+    export function rf433PrepareReceive(): void {
+        _rf433RxBuffer = ""
+        _rf433DataReady = false
+        _rf433Receiving = true
+    }
+
+    /**
+     * RF433MHz 2. Check if data is received
+     */
+    //% block="RF433MHz 2. is data received?"
+    //% group="RF433MHz" weight=96
+    export function rf433DataAvailable(): boolean {
+        if (!_rf433Receiving) return false
+
+        // Check for sync pattern
+        let syncCount = 0
+        let lastState = 0
+        let startTime = input.runningTimeMicros()
+
+        // Look for preamble pattern (alternating 1s and 0s)
+        while (input.runningTimeMicros() - startTime < 50000) {  // 50ms timeout
+            let currentState = pins.digitalReadPin(_rf433RxPin)
+            if (currentState != lastState) {
+                syncCount++
+                lastState = currentState
+                if (syncCount >= 12) {
+                    // Found sync pattern, look for start bits
+                    control.waitMicros(_rf433BitTime / 2)
+
+                    // Read start bits (expecting 1100)
+                    let b1 = pins.digitalReadPin(_rf433RxPin)
+                    control.waitMicros(_rf433BitTime)
+                    let b2 = pins.digitalReadPin(_rf433RxPin)
+                    control.waitMicros(_rf433BitTime)
+                    let b3 = pins.digitalReadPin(_rf433RxPin)
+                    control.waitMicros(_rf433BitTime)
+                    let b4 = pins.digitalReadPin(_rf433RxPin)
+
+                    if (b1 == 1 && b2 == 1 && b3 == 0 && b4 == 0) {
+                        _rf433DataReady = true
+                        return true
+                    }
+                }
+            }
+            control.waitMicros(10)
+        }
+
+        return false
+    }
+
+    /**
+     * RF433MHz 3. Store received data to buffer
+     */
+    //% block="RF433MHz 3. store received data to buffer"
+    //% group="RF433MHz" weight=95
+    export function rf433StoreToBuffer(): void {
+        if (!_rf433DataReady) return
+
+        control.waitMicros(_rf433BitTime)
+
+        // Read length byte
+        let length = rf433ReadByte(_rf433RxPin)
+        if (length > 32) length = 32  // Limit to prevent overflow
+
+        // Read data bytes
+        let data = ""
+        let checksum = length
+        for (let i = 0; i < length; i++) {
+            let byte = rf433ReadByte(_rf433RxPin)
+            data += String.fromCharCode(byte)
+            checksum ^= byte
+        }
+
+        // Read and verify checksum
+        let rxChecksum = rf433ReadByte(_rf433RxPin)
+        if (rxChecksum == checksum) {
+            _rf433RxBuffer = data
         } else {
-            config &= 0xFE  // PRIM_RX = 0
-            nrfWriteReg(0x00, config)
-            pins.digitalWritePin(_nrfCE, 0)
-        }
-        basic.pause(2)
-    }
-
-    //% block="nRF24L01 address set %addr"
-    //% addr.defl="BRIX1"
-    //% group="nRF24L01" weight=75
-    export function nrf24l01SetAddress(addr: string): void {
-        // 5바이트 주소 설정
-        let addrBytes: number[] = []
-        for (let i = 0; i < 5; i++) {
-            addrBytes.push(i < addr.length ? addr.charCodeAt(i) : 0)
+            _rf433RxBuffer = ""  // Invalid data
         }
 
-        // TX 주소와 RX 파이프 0 주소 설정
-        pins.digitalWritePin(_nrfCSN, 0)
-        pins.spiWrite(0x20 | 0x10)  // W_REGISTER | TX_ADDR
-        for (let byte of addrBytes) {
-            pins.spiWrite(byte)
+        _rf433DataReady = false
+        _rf433Receiving = false
+    }
+
+    /**
+     * RF433MHz read received data
+     */
+    //% block="RF433MHz: read received data"
+    //% group="RF433MHz" weight=94
+    export function rf433ReadData(): string {
+        let data = _rf433RxBuffer
+        _rf433RxBuffer = ""
+        return data
+    }
+
+    // Internal function: send one byte
+    function rf433SendByte(pin: DigitalPin, byte: number): void {
+        for (let bit = 0; bit < 8; bit++) {
+            if (byte & (1 << (7 - bit))) {
+                pins.digitalWritePin(pin, 1)
+            } else {
+                pins.digitalWritePin(pin, 0)
+            }
+            control.waitMicros(_rf433BitTime)
         }
-        pins.digitalWritePin(_nrfCSN, 1)
-
-        pins.digitalWritePin(_nrfCSN, 0)
-        pins.spiWrite(0x20 | 0x0A)  // W_REGISTER | RX_ADDR_P0
-        for (let byte of addrBytes) {
-            pins.spiWrite(byte)
-        }
-        pins.digitalWritePin(_nrfCSN, 1)
     }
 
-    //% block="nRF24L01 string send %text"
-    //% text.defl="Hello"
-    //% group="nRF24L01" weight=74
-    export function nrf24l01SendString(text: string): boolean {
-        let payload: number[] = []
-        for (let i = 0; i < _nrfPayloadSize; i++) {
-            payload.push(i < text.length ? text.charCodeAt(i) : 0)
-        }
-        return nrfSendPayload(payload)
-    }
-
-    //% block="nRF24L01 number send %value"
-    //% group="nRF24L01" weight=73
-    export function nrf24l01SendNumber(value: number): boolean {
-        return nrf24l01SendString("" + value)
-    }
-
-    //% block="nRF24L01 data receive?"
-    //% group="nRF24L01" weight=72
-    export function nrf24l01DataReady(): boolean {
-        let status = nrfReadReg(0x07)
-        return (status & 0x40) != 0  // RX_DR 플래그
-    }
-
-    //% block="nRF24L01 string receive"
-    //% group="nRF24L01" weight=71
-    export function nrf24l01ReceiveString(): string {
-        if (!nrf24l01DataReady()) return ""
-
-        // 데이터 읽기
-        pins.digitalWritePin(_nrfCSN, 0)
-        pins.spiWrite(0x61)  // R_RX_PAYLOAD
-        let result = ""
-        for (let i = 0; i < _nrfPayloadSize; i++) {
-            let byte = pins.spiWrite(0xFF)
-            if (byte > 0 && byte < 128) {
-                result += String.fromCharCode(byte)
+    // Internal function: read one byte
+    function rf433ReadByte(pin: DigitalPin): number {
+        let byte = 0
+        for (let bit = 0; bit < 8; bit++) {
+            control.waitMicros(_rf433BitTime)
+            if (pins.digitalReadPin(pin) == 1) {
+                byte |= (1 << (7 - bit))
             }
         }
-        pins.digitalWritePin(_nrfCSN, 1)
-
-        // 플래그 클리어
-        nrfWriteReg(0x07, 0x40)
-
-        return result
-    }
-
-    //% block="nRF24L01 number receive"
-    //% group="nRF24L01" weight=70
-    export function nrf24l01ReceiveNumber(): number {
-        let str = nrf24l01ReceiveString()
-        let num = parseFloat(str)
-        return isNaN(num) ? 0 : num
-    }
-
-    // nRF24L01 내부 함수들
-    function nrfWriteReg(reg: number, value: number): void {
-        pins.digitalWritePin(_nrfCSN, 0)
-        pins.spiWrite(0x20 | reg)
-        pins.spiWrite(value)
-        pins.digitalWritePin(_nrfCSN, 1)
-    }
-
-    function nrfReadReg(reg: number): number {
-        pins.digitalWritePin(_nrfCSN, 0)
-        pins.spiWrite(reg)
-        let value = pins.spiWrite(0xFF)
-        pins.digitalWritePin(_nrfCSN, 1)
-        return value
-    }
-
-    function nrfFlushTx(): void {
-        pins.digitalWritePin(_nrfCSN, 0)
-        pins.spiWrite(0xE1)
-        pins.digitalWritePin(_nrfCSN, 1)
-    }
-
-    function nrfFlushRx(): void {
-        pins.digitalWritePin(_nrfCSN, 0)
-        pins.spiWrite(0xE2)
-        pins.digitalWritePin(_nrfCSN, 1)
-    }
-
-    function nrfSendPayload(payload: number[]): boolean {
-        // TX FIFO에 데이터 쓰기
-        pins.digitalWritePin(_nrfCSN, 0)
-        pins.spiWrite(0xA0)  // W_TX_PAYLOAD
-        for (let byte of payload) {
-            pins.spiWrite(byte)
-        }
-        pins.digitalWritePin(_nrfCSN, 1)
-
-        // 전송 시작
-        pins.digitalWritePin(_nrfCE, 1)
-        control.waitMicros(15)
-        pins.digitalWritePin(_nrfCE, 0)
-
-        // 전송 완료 대기
-        basic.pause(10)
-        let status = nrfReadReg(0x07)
-
-        // 플래그 클리어
-        nrfWriteReg(0x07, 0x30)
-
-        return (status & 0x20) != 0  // TX_DS 플래그
+        return byte
     }
 
 
-    /********** LoRa 장거리 무선 모듈 **********/
+    /********** IR 적외선 리모컨 **********/
 
-    // LoRa는 장거리 저전력 무선 통신 모듈입니다.
-    // 최대 10km 이상 통신 가능 (환경에 따라 다름)
-    // SX1276/SX1278 또는 Ra-02 모듈 사용
+    // IR 리모컨 수신기 (VS1838B, TSOP38238 등)
+    // NEC 프로토콜 기반 (대부분의 리모컨 호환)
 
-    // LoRa 핀 저장 변수
-    let _loraTx: SerialPin = SerialPin.P1
-    let _loraRx: SerialPin = SerialPin.P2
-    let _loraChannel: number = 0
-    let _loraAddress: number = 0
-
-    //% block="LoRa set|TX pin %tx|RX pin %rx|channel %channel|address %addr"
-    //% tx.defl=SerialPin.P1
-    //% rx.defl=SerialPin.P2
-    //% channel.defl=0 channel.min=0 channel.max=31
-    //% addr.defl=0 addr.min=0 addr.max=65535
-    //% group="LoRa" weight=69
-    //% inlineInputMode=inline
-    export function loraInit(tx: SerialPin, rx: SerialPin, channel: number, addr: number): void {
-        _loraTx = tx
-        _loraRx = rx
-        _loraChannel = channel
-        _loraAddress = addr
-
-        serial.redirect(tx, rx, BaudRate.BaudRate9600)
-        basic.pause(100)
+    // IR 리모컨 버튼 (일반 미니 리모컨 기준)
+    export enum IRButton {
+        //% block="0"
+        Num0 = 0,
+        //% block="1"
+        Num1 = 1,
+        //% block="2"
+        Num2 = 2,
+        //% block="3"
+        Num3 = 3,
+        //% block="4"
+        Num4 = 4,
+        //% block="5"
+        Num5 = 5,
+        //% block="6"
+        Num6 = 6,
+        //% block="7"
+        Num7 = 7,
+        //% block="8"
+        Num8 = 8,
+        //% block="9"
+        Num9 = 9,
+        //% block="*"
+        Star = 10,
+        //% block="#"
+        Hash = 11,
+        //% block="▲"
+        Up = 12,
+        //% block="▼"
+        Down = 13,
+        //% block="◀"
+        Left = 14,
+        //% block="▶"
+        Right = 15,
+        //% block="OK"
+        OK = 16,
+        //% block="other"
+        Other = 99
     }
 
-    //% block="LoRa string send %text"
-    //% text.defl="Hello"
-    //% group="LoRa" weight=68
-    export function loraSendString(text: string): void {
-        serial.writeLine(text)
-    }
+    // IR 상태 변수
+    let _irPin: DigitalPin = DigitalPin.P11
+    let _irRawCode: number = 0
+    let _irButton: number = -1
+    let _irHasSignal: boolean = false
+    let _irLastTime: number = 0
+    let _irCallback: (button: number) => void = null
 
-    //% block="LoRa number send %value"
-    //% group="LoRa" weight=67
-    export function loraSendNumber(value: number): void {
-        serial.writeLine("" + value)
-    }
+    // NEC 리모컨 코드 매핑 (일반적인 미니 리모컨)
+    const IR_CODE_MAP: number[] = [
+        0x16,  // 0
+        0x0C,  // 1
+        0x18,  // 2
+        0x5E,  // 3
+        0x08,  // 4
+        0x1C,  // 5
+        0x5A,  // 6
+        0x42,  // 7
+        0x52,  // 8
+        0x4A,  // 9
+        0x22,  // * (10)
+        0x0D,  // # (11)
+        0x46,  // ▲ (12)
+        0x15,  // ▼ (13)
+        0x44,  // ◀ (14)
+        0x43,  // ▶ (15)
+        0x40   // OK (16)
+    ]
 
-    //% block="LoRa data receive"
-    //% group="LoRa" weight=66
-    export function loraReceive(): string {
-        return serial.readLine()
-    }
+    //% block="IR remote receiver set: pin %pin"
+    //% pin.defl=DigitalPin.P11
+    //% group="Infrared" weight=45
+    export function irInit(pin: DigitalPin): void {
+        _irPin = pin
+        _irRawCode = 0
+        _irButton = -1
+        _irHasSignal = false
 
-    //% block="LoRa target address set %addr"
-    //% addr.defl=0 addr.min=0 addr.max=65535
-    //% group="LoRa" weight=65
-    export function loraSetTarget(addr: number): void {
-        // AT 명령어로 대상 주소 설정 (모듈에 따라 다름)
-        serial.writeLine("AT+ADDR=" + addr)
-        basic.pause(100)
-    }
+        // 핀 이벤트 설정 (하강 에지에서 시작)
+        pins.setPull(pin, PinPullMode.PullUp)
 
-
-    /********** MFRC522 RFID 리더 **********/
-
-    // MFRC522는 13.56MHz RFID 카드 리더입니다.
-    // Mifare Classic 1K/4K 카드 및 태그를 읽을 수 있습니다.
-    // SPI 통신 사용
-
-    // MFRC522 핀 저장 변수
-    let _mfrc522RST: DigitalPin = DigitalPin.P8
-    let _mfrc522SDA: DigitalPin = DigitalPin.P16  // CS/SDA
-    let _mfrc522LastUID: string = ""
-    let _mfrc522CardPresent: boolean = false
-
-    // MFRC522 레지스터 주소
-    const MFRC522_CommandReg = 0x01
-    const MFRC522_ComIEnReg = 0x02
-    const MFRC522_ComIrqReg = 0x04
-    const MFRC522_DivIrqReg = 0x05
-    const MFRC522_ErrorReg = 0x06
-    const MFRC522_Status1Reg = 0x07
-    const MFRC522_Status2Reg = 0x08
-    const MFRC522_FIFODataReg = 0x09
-    const MFRC522_FIFOLevelReg = 0x0A
-    const MFRC522_ControlReg = 0x0C
-    const MFRC522_BitFramingReg = 0x0D
-    const MFRC522_ModeReg = 0x11
-    const MFRC522_TxControlReg = 0x14
-    const MFRC522_TxASKReg = 0x15
-    const MFRC522_CRCResultRegH = 0x21
-    const MFRC522_CRCResultRegL = 0x22
-    const MFRC522_TModeReg = 0x2A
-    const MFRC522_TPrescalerReg = 0x2B
-    const MFRC522_TReloadRegH = 0x2C
-    const MFRC522_TReloadRegL = 0x2D
-    const MFRC522_VersionReg = 0x37
-
-    //% block="RFID(MFRC522) set|RST pin %rst|SDA pin %sda"
-    //% rst.defl=DigitalPin.P8
-    //% sda.defl=DigitalPin.P16
-    //% group="MFRC522" weight=64
-    //% inlineInputMode=inline
-    export function mfrc522Init(rst: DigitalPin, sda: DigitalPin): void {
-        _mfrc522RST = rst
-        _mfrc522SDA = sda
-
-        // 핀 초기화
-        pins.digitalWritePin(_mfrc522SDA, 1)
-        pins.digitalWritePin(_mfrc522RST, 1)
-
-        // 하드웨어 리셋
-        pins.digitalWritePin(_mfrc522RST, 0)
-        control.waitMicros(10)
-        pins.digitalWritePin(_mfrc522RST, 1)
-        basic.pause(50)
-
-        // 소프트 리셋
-        mfrc522WriteReg(MFRC522_CommandReg, 0x0F)
-        basic.pause(50)
-
-        // 타이머 설정
-        mfrc522WriteReg(MFRC522_TModeReg, 0x8D)
-        mfrc522WriteReg(MFRC522_TPrescalerReg, 0x3E)
-        mfrc522WriteReg(MFRC522_TReloadRegH, 0x00)
-        mfrc522WriteReg(MFRC522_TReloadRegL, 0x30)
-
-        // 기타 설정
-        mfrc522WriteReg(MFRC522_TxASKReg, 0x40)
-        mfrc522WriteReg(MFRC522_ModeReg, 0x3D)
-
-        // 안테나 ON
-        let txControl = mfrc522ReadReg(MFRC522_TxControlReg)
-        mfrc522WriteReg(MFRC522_TxControlReg, txControl | 0x03)
-    }
-
-    //% block="RFID card detected?"
-    //% group="MFRC522" weight=63
-    export function mfrc522CardPresent(): boolean {
-        // REQA 명령 전송
-        mfrc522WriteReg(MFRC522_BitFramingReg, 0x07)
-
-        let result = mfrc522Transceive([0x26], 1)
-        _mfrc522CardPresent = (result.length == 2)
-
-        return _mfrc522CardPresent
-    }
-
-    //% block="RFID card UID read"
-    //% group="MFRC522" weight=62
-    export function mfrc522ReadUID(): string {
-        if (!mfrc522CardPresent()) {
-            _mfrc522LastUID = ""
-            return ""
-        }
-
-        // Anticollision 명령
-        mfrc522WriteReg(MFRC522_BitFramingReg, 0x00)
-        let result = mfrc522Transceive([0x93, 0x20], 2)
-
-        if (result.length >= 5) {
-            // UID를 16진수 문자열로 변환
-            _mfrc522LastUID = ""
-            for (let i = 0; i < 4; i++) {
-                let b = result[i]
-                let hex = "0123456789ABCDEF".charAt((b >> 4) & 0x0F) + "0123456789ABCDEF".charAt(b & 0x0F)
-                _mfrc522LastUID += hex
-            }
-        } else {
-            _mfrc522LastUID = ""
-        }
-
-        return _mfrc522LastUID
-    }
-
-    //% block="RFID last UID"
-    //% group="MFRC522" weight=61
-    export function mfrc522LastUID(): string {
-        return _mfrc522LastUID
-    }
-
-    //% block="RFID UID %targetUID ?"
-    //% targetUID.defl="A1B2C3D4"
-    //% group="MFRC522" weight=60
-    export function mfrc522UIDMatches(targetUID: string): boolean {
-        return _mfrc522LastUID.toUpperCase() == targetUID.toUpperCase()
-    }
-
-    //% block="RFID card detected"
-    //% group="MFRC522" weight=59
-    //% draggableParameters
-    export function mfrc522OnCardDetected(handler: () => void): void {
+        // 백그라운드에서 IR 신호 모니터링
         control.inBackground(() => {
             while (true) {
-                if (mfrc522CardPresent()) {
-                    mfrc522ReadUID()
-                    handler()
-                    basic.pause(500)  // 중복 감지 방지
+                let code = irReadNEC()
+                if (code > 0) {
+                    _irRawCode = code
+                    _irButton = irCodeToButton(code & 0xFF)
+                    _irHasSignal = true
+                    _irLastTime = input.runningTime()
+
+                    if (_irCallback != null) {
+                        _irCallback(_irButton)
+                    }
                 }
-                basic.pause(100)
+                basic.pause(50)
             }
         })
     }
 
-    // MFRC522 내부 함수들
-    function mfrc522WriteReg(reg: number, value: number): void {
-        pins.digitalWritePin(_mfrc522SDA, 0)
-        pins.spiWrite((reg << 1) & 0x7E)
-        pins.spiWrite(value)
-        pins.digitalWritePin(_mfrc522SDA, 1)
+    //% block="IR remote signal ?"
+    //% group="Infrared" weight=44
+    export function irHasSignal(): boolean {
+        // 500ms 이내에 신호가 있었으면 true
+        if (_irHasSignal && (input.runningTime() - _irLastTime) < 500) {
+            return true
+        }
+        _irHasSignal = false
+        return false
     }
 
-    function mfrc522ReadReg(reg: number): number {
-        pins.digitalWritePin(_mfrc522SDA, 0)
-        pins.spiWrite(((reg << 1) & 0x7E) | 0x80)
-        let value = pins.spiWrite(0x00)
-        pins.digitalWritePin(_mfrc522SDA, 1)
-        return value
+    //% block="IR remote button #"
+    //% group="Infrared" weight=43
+    export function irButtonNumber(): number {
+        let btn = _irButton
+        _irHasSignal = false
+        return btn
     }
 
-    function mfrc522Transceive(data: number[], txBits: number): number[] {
-        // FIFO 클리어
-        mfrc522WriteReg(MFRC522_FIFOLevelReg, 0x80)
+    //% block="IR remote original code value"
+    //% group="Infrared" weight=42
+    export function irRawCode(): number {
+        return _irRawCode
+    }
 
-        // 데이터를 FIFO에 쓰기
-        for (let byte of data) {
-            mfrc522WriteReg(MFRC522_FIFODataReg, byte)
+    //% block="Is the IR remote button %button ?"
+    //% button.defl=IRButton.Num0
+    //% group="Infrared" weight=41
+    export function irButtonIs(button: IRButton): boolean {
+        return _irButton == button
+    }
+
+    //% block="When the IR remote button is pressed"
+    //% group="Infrared" weight=40
+    //% draggableParameters
+    export function irOnButton(handler: (button: number) => void): void {
+        _irCallback = handler
+    }
+
+    // NEC 프로토콜 읽기 (내부 함수)
+    function irReadNEC(): number {
+        // 리더 펄스 대기 (9ms LOW)
+        let startTime = input.runningTimeMicros()
+        while (pins.digitalReadPin(_irPin) == 0) {
+            if (input.runningTimeMicros() - startTime > 15000) return 0
+        }
+        let lowTime = input.runningTimeMicros() - startTime
+        if (lowTime < 8000 || lowTime > 10000) return 0
+
+        // 스페이스 대기 (4.5ms HIGH)
+        startTime = input.runningTimeMicros()
+        while (pins.digitalReadPin(_irPin) == 1) {
+            if (input.runningTimeMicros() - startTime > 6000) return 0
+        }
+        let highTime = input.runningTimeMicros() - startTime
+        if (highTime < 4000 || highTime > 5000) return 0
+
+        // 32비트 데이터 읽기
+        let data: number = 0
+        for (let i = 0; i < 32; i++) {
+            // LOW 구간 (562.5us)
+            startTime = input.runningTimeMicros()
+            while (pins.digitalReadPin(_irPin) == 0) {
+                if (input.runningTimeMicros() - startTime > 1000) return 0
+            }
+
+            // HIGH 구간 측정 (0: 562.5us, 1: 1687.5us)
+            startTime = input.runningTimeMicros()
+            while (pins.digitalReadPin(_irPin) == 1) {
+                if (input.runningTimeMicros() - startTime > 2000) return 0
+            }
+            let bitTime = input.runningTimeMicros() - startTime
+
+            // 비트 판별
+            if (bitTime > 1000) {
+                data |= (1 << i)
+            }
         }
 
-        // Transceive 명령 실행
-        mfrc522WriteReg(MFRC522_CommandReg, 0x0C)
-        mfrc522WriteReg(MFRC522_BitFramingReg, mfrc522ReadReg(MFRC522_BitFramingReg) | 0x80)
+        return data
+    }
 
-        // 응답 대기
-        let timeout = 25
-        let irq = 0
-        while (timeout > 0) {
-            irq = mfrc522ReadReg(MFRC522_ComIrqReg)
-            if ((irq & 0x30) != 0) break  // RxIRq 또는 IdleIRq
-            timeout--
-            basic.pause(1)
+    // IR 코드를 버튼 번호로 변환 (내부 함수)
+    function irCodeToButton(code: number): number {
+        for (let i = 0; i < IR_CODE_MAP.length; i++) {
+            if (IR_CODE_MAP[i] == code) {
+                return i
+            }
+        }
+        return IRButton.Other
+    }
+
+    //% block="IR TX code %code|pin %pin"
+    //% code.defl=0
+    //% pin.defl=DigitalPin.P12
+    //% group="Infrared" weight=39
+    export function irTransmit(code: number, pin: DigitalPin): void {
+        // NEC 프로토콜 송신
+        // 리더 펄스 (9ms 38kHz, 4.5ms OFF)
+        irCarrier(pin, 9000)
+        control.waitMicros(4500)
+
+        // 32비트 데이터 전송
+        for (let i = 0; i < 32; i++) {
+            // 562.5us 캐리어
+            irCarrier(pin, 562)
+
+            // 데이터 비트에 따라 대기
+            if (code & (1 << i)) {
+                control.waitMicros(1687)  // 1
+            } else {
+                control.waitMicros(562)   // 0
+            }
         }
 
-        // 전송 중지
-        mfrc522WriteReg(MFRC522_BitFramingReg, mfrc522ReadReg(MFRC522_BitFramingReg) & 0x7F)
+        // 종료 펄스
+        irCarrier(pin, 562)
+    }
 
-        // 에러 체크
-        if (timeout == 0 || (mfrc522ReadReg(MFRC522_ErrorReg) & 0x1B) != 0) {
-            return []
+    // 38kHz 캐리어 생성 (내부 함수)
+    function irCarrier(pin: DigitalPin, durationUs: number): void {
+        let cycles = Math.floor(durationUs / 26)  // 38kHz = 26us 주기
+        for (let i = 0; i < cycles; i++) {
+            pins.digitalWritePin(pin, 1)
+            control.waitMicros(13)
+            pins.digitalWritePin(pin, 0)
+            control.waitMicros(13)
         }
-
-        // 결과 읽기
-        let result: number[] = []
-        let fifoLen = mfrc522ReadReg(MFRC522_FIFOLevelReg)
-        for (let i = 0; i < fifoLen; i++) {
-            result.push(mfrc522ReadReg(MFRC522_FIFODataReg))
-        }
-
-        return result
     }
 
 
@@ -840,238 +799,488 @@ namespace Communications07 {
     }
 
 
-    /********** IR 적외선 리모컨 **********/
+    /********** MFRC522 RFID 리더 **********/
 
-    // IR 리모컨 수신기 (VS1838B, TSOP38238 등)
-    // NEC 프로토콜 기반 (대부분의 리모컨 호환)
+    // MFRC522는 13.56MHz RFID 카드 리더입니다.
+    // Mifare Classic 1K/4K 카드 및 태그를 읽을 수 있습니다.
+    // SPI 통신 사용
 
-    // IR 리모컨 버튼 (일반 미니 리모컨 기준)
-    export enum IRButton {
-        //% block="0"
-        Num0 = 0,
-        //% block="1"
-        Num1 = 1,
-        //% block="2"
-        Num2 = 2,
-        //% block="3"
-        Num3 = 3,
-        //% block="4"
-        Num4 = 4,
-        //% block="5"
-        Num5 = 5,
-        //% block="6"
-        Num6 = 6,
-        //% block="7"
-        Num7 = 7,
-        //% block="8"
-        Num8 = 8,
-        //% block="9"
-        Num9 = 9,
-        //% block="*"
-        Star = 10,
-        //% block="#"
-        Hash = 11,
-        //% block="▲"
-        Up = 12,
-        //% block="▼"
-        Down = 13,
-        //% block="◀"
-        Left = 14,
-        //% block="▶"
-        Right = 15,
-        //% block="OK"
-        OK = 16,
-        //% block="other"
-        Other = 99
+    // MFRC522 핀 저장 변수
+    let _mfrc522RST: DigitalPin = DigitalPin.P8
+    let _mfrc522SDA: DigitalPin = DigitalPin.P16  // CS/SDA
+    let _mfrc522LastUID: string = ""
+    let _mfrc522CardPresent: boolean = false
+
+    // MFRC522 레지스터 주소
+    const MFRC522_CommandReg = 0x01
+    const MFRC522_ComIEnReg = 0x02
+    const MFRC522_ComIrqReg = 0x04
+    const MFRC522_DivIrqReg = 0x05
+    const MFRC522_ErrorReg = 0x06
+    const MFRC522_Status1Reg = 0x07
+    const MFRC522_Status2Reg = 0x08
+    const MFRC522_FIFODataReg = 0x09
+    const MFRC522_FIFOLevelReg = 0x0A
+    const MFRC522_ControlReg = 0x0C
+    const MFRC522_BitFramingReg = 0x0D
+    const MFRC522_ModeReg = 0x11
+    const MFRC522_TxControlReg = 0x14
+    const MFRC522_TxASKReg = 0x15
+    const MFRC522_CRCResultRegH = 0x21
+    const MFRC522_CRCResultRegL = 0x22
+    const MFRC522_TModeReg = 0x2A
+    const MFRC522_TPrescalerReg = 0x2B
+    const MFRC522_TReloadRegH = 0x2C
+    const MFRC522_TReloadRegL = 0x2D
+    const MFRC522_VersionReg = 0x37
+
+    //% block="RFID(MFRC522) set|RST pin %rst|SDA pin %sda"
+    //% rst.defl=DigitalPin.P8
+    //% sda.defl=DigitalPin.P16
+    //% group="MFRC522" weight=64
+    //% inlineInputMode=inline
+    export function mfrc522Init(rst: DigitalPin, sda: DigitalPin): void {
+        _mfrc522RST = rst
+        _mfrc522SDA = sda
+
+        // 핀 초기화
+        pins.digitalWritePin(_mfrc522SDA, 1)
+        pins.digitalWritePin(_mfrc522RST, 1)
+
+        // 하드웨어 리셋
+        pins.digitalWritePin(_mfrc522RST, 0)
+        control.waitMicros(10)
+        pins.digitalWritePin(_mfrc522RST, 1)
+        basic.pause(50)
+
+        // 소프트 리셋
+        mfrc522WriteReg(MFRC522_CommandReg, 0x0F)
+        basic.pause(50)
+
+        // 타이머 설정
+        mfrc522WriteReg(MFRC522_TModeReg, 0x8D)
+        mfrc522WriteReg(MFRC522_TPrescalerReg, 0x3E)
+        mfrc522WriteReg(MFRC522_TReloadRegH, 0x00)
+        mfrc522WriteReg(MFRC522_TReloadRegL, 0x30)
+
+        // 기타 설정
+        mfrc522WriteReg(MFRC522_TxASKReg, 0x40)
+        mfrc522WriteReg(MFRC522_ModeReg, 0x3D)
+
+        // 안테나 ON
+        let txControl = mfrc522ReadReg(MFRC522_TxControlReg)
+        mfrc522WriteReg(MFRC522_TxControlReg, txControl | 0x03)
     }
 
-    // IR 상태 변수
-    let _irPin: DigitalPin = DigitalPin.P11
-    let _irRawCode: number = 0
-    let _irButton: number = -1
-    let _irHasSignal: boolean = false
-    let _irLastTime: number = 0
-    let _irCallback: (button: number) => void = null
+    //% block="RFID card detected?"
+    //% group="MFRC522" weight=63
+    export function mfrc522CardPresent(): boolean {
+        // REQA 명령 전송
+        mfrc522WriteReg(MFRC522_BitFramingReg, 0x07)
 
-    // NEC 리모컨 코드 매핑 (일반적인 미니 리모컨)
-    const IR_CODE_MAP: number[] = [
-        0x16,  // 0
-        0x0C,  // 1
-        0x18,  // 2
-        0x5E,  // 3
-        0x08,  // 4
-        0x1C,  // 5
-        0x5A,  // 6
-        0x42,  // 7
-        0x52,  // 8
-        0x4A,  // 9
-        0x22,  // * (10)
-        0x0D,  // # (11)
-        0x46,  // ▲ (12)
-        0x15,  // ▼ (13)
-        0x44,  // ◀ (14)
-        0x43,  // ▶ (15)
-        0x40   // OK (16)
-    ]
+        let result = mfrc522Transceive([0x26], 1)
+        _mfrc522CardPresent = (result.length == 2)
 
-    //% block="IR remote receiver set: pin %pin"
-    //% pin.defl=DigitalPin.P11
-    //% group="Infrared" weight=45
-    export function irInit(pin: DigitalPin): void {
-        _irPin = pin
-        _irRawCode = 0
-        _irButton = -1
-        _irHasSignal = false
+        return _mfrc522CardPresent
+    }
 
-        // 핀 이벤트 설정 (하강 에지에서 시작)
-        pins.setPull(pin, PinPullMode.PullUp)
+    //% block="RFID card UID read"
+    //% group="MFRC522" weight=62
+    export function mfrc522ReadUID(): string {
+        if (!mfrc522CardPresent()) {
+            _mfrc522LastUID = ""
+            return ""
+        }
 
-        // 백그라운드에서 IR 신호 모니터링
+        // Anticollision 명령
+        mfrc522WriteReg(MFRC522_BitFramingReg, 0x00)
+        let result = mfrc522Transceive([0x93, 0x20], 2)
+
+        if (result.length >= 5) {
+            // UID를 16진수 문자열로 변환
+            _mfrc522LastUID = ""
+            for (let i = 0; i < 4; i++) {
+                let b = result[i]
+                let hex = "0123456789ABCDEF".charAt((b >> 4) & 0x0F) + "0123456789ABCDEF".charAt(b & 0x0F)
+                _mfrc522LastUID += hex
+            }
+        } else {
+            _mfrc522LastUID = ""
+        }
+
+        return _mfrc522LastUID
+    }
+
+    //% block="RFID last UID"
+    //% group="MFRC522" weight=61
+    export function mfrc522LastUID(): string {
+        return _mfrc522LastUID
+    }
+
+    //% block="RFID UID %targetUID ?"
+    //% targetUID.defl="A1B2C3D4"
+    //% group="MFRC522" weight=60
+    export function mfrc522UIDMatches(targetUID: string): boolean {
+        return _mfrc522LastUID.toUpperCase() == targetUID.toUpperCase()
+    }
+
+    //% block="RFID card detected"
+    //% group="MFRC522" weight=59
+    //% draggableParameters
+    export function mfrc522OnCardDetected(handler: () => void): void {
         control.inBackground(() => {
             while (true) {
-                let code = irReadNEC()
-                if (code > 0) {
-                    _irRawCode = code
-                    _irButton = irCodeToButton(code & 0xFF)
-                    _irHasSignal = true
-                    _irLastTime = input.runningTime()
-
-                    if (_irCallback != null) {
-                        _irCallback(_irButton)
-                    }
+                if (mfrc522CardPresent()) {
+                    mfrc522ReadUID()
+                    handler()
+                    basic.pause(500)  // 중복 감지 방지
                 }
-                basic.pause(50)
+                basic.pause(100)
             }
         })
     }
 
-    //% block="IR remote signal ?"
-    //% group="Infrared" weight=44
-    export function irHasSignal(): boolean {
-        // 500ms 이내에 신호가 있었으면 true
-        if (_irHasSignal && (input.runningTime() - _irLastTime) < 500) {
-            return true
+    // MFRC522 내부 함수들
+    function mfrc522WriteReg(reg: number, value: number): void {
+        pins.digitalWritePin(_mfrc522SDA, 0)
+        pins.spiWrite((reg << 1) & 0x7E)
+        pins.spiWrite(value)
+        pins.digitalWritePin(_mfrc522SDA, 1)
+    }
+
+    function mfrc522ReadReg(reg: number): number {
+        pins.digitalWritePin(_mfrc522SDA, 0)
+        pins.spiWrite(((reg << 1) & 0x7E) | 0x80)
+        let value = pins.spiWrite(0x00)
+        pins.digitalWritePin(_mfrc522SDA, 1)
+        return value
+    }
+
+    function mfrc522Transceive(data: number[], txBits: number): number[] {
+        // FIFO 클리어
+        mfrc522WriteReg(MFRC522_FIFOLevelReg, 0x80)
+
+        // 데이터를 FIFO에 쓰기
+        for (let byte of data) {
+            mfrc522WriteReg(MFRC522_FIFODataReg, byte)
         }
-        _irHasSignal = false
-        return false
-    }
 
-    //% block="IR remote button #"
-    //% group="Infrared" weight=43
-    export function irButtonNumber(): number {
-        let btn = _irButton
-        _irHasSignal = false
-        return btn
-    }
+        // Transceive 명령 실행
+        mfrc522WriteReg(MFRC522_CommandReg, 0x0C)
+        mfrc522WriteReg(MFRC522_BitFramingReg, mfrc522ReadReg(MFRC522_BitFramingReg) | 0x80)
 
-    //% block="IR remote original code value"
-    //% group="Infrared" weight=42
-    export function irRawCode(): number {
-        return _irRawCode
-    }
-
-    //% block="Is the IR remote button %button ?"
-    //% button.defl=IRButton.Num0
-    //% group="Infrared" weight=41
-    export function irButtonIs(button: IRButton): boolean {
-        return _irButton == button
-    }
-
-    //% block="When the IR remote button is pressed"
-    //% group="Infrared" weight=40
-    //% draggableParameters
-    export function irOnButton(handler: (button: number) => void): void {
-        _irCallback = handler
-    }
-
-    // NEC 프로토콜 읽기 (내부 함수)
-    function irReadNEC(): number {
-        // 리더 펄스 대기 (9ms LOW)
-        let startTime = input.runningTimeMicros()
-        while (pins.digitalReadPin(_irPin) == 0) {
-            if (input.runningTimeMicros() - startTime > 15000) return 0
+        // 응답 대기
+        let timeout = 25
+        let irq = 0
+        while (timeout > 0) {
+            irq = mfrc522ReadReg(MFRC522_ComIrqReg)
+            if ((irq & 0x30) != 0) break  // RxIRq 또는 IdleIRq
+            timeout--
+            basic.pause(1)
         }
-        let lowTime = input.runningTimeMicros() - startTime
-        if (lowTime < 8000 || lowTime > 10000) return 0
 
-        // 스페이스 대기 (4.5ms HIGH)
-        startTime = input.runningTimeMicros()
-        while (pins.digitalReadPin(_irPin) == 1) {
-            if (input.runningTimeMicros() - startTime > 6000) return 0
+        // 전송 중지
+        mfrc522WriteReg(MFRC522_BitFramingReg, mfrc522ReadReg(MFRC522_BitFramingReg) & 0x7F)
+
+        // 에러 체크
+        if (timeout == 0 || (mfrc522ReadReg(MFRC522_ErrorReg) & 0x1B) != 0) {
+            return []
         }
-        let highTime = input.runningTimeMicros() - startTime
-        if (highTime < 4000 || highTime > 5000) return 0
 
-        // 32비트 데이터 읽기
-        let data: number = 0
-        for (let i = 0; i < 32; i++) {
-            // LOW 구간 (562.5us)
-            startTime = input.runningTimeMicros()
-            while (pins.digitalReadPin(_irPin) == 0) {
-                if (input.runningTimeMicros() - startTime > 1000) return 0
+        // 결과 읽기
+        let result: number[] = []
+        let fifoLen = mfrc522ReadReg(MFRC522_FIFOLevelReg)
+        for (let i = 0; i < fifoLen; i++) {
+            result.push(mfrc522ReadReg(MFRC522_FIFODataReg))
+        }
+
+        return result
+    }
+
+
+    /********** nRF24L01 2.4GHz 무선 모듈 **********/
+
+    // nRF24L01은 2.4GHz 대역의 무선 통신 모듈입니다.
+    // 최대 2Mbps 속도, 최대 100m 거리 통신 가능
+    // micro:bit 간 또는 아두이노와 통신할 때 사용
+
+    // nRF24L01 핀 저장 변수
+    let _nrfCE: DigitalPin = DigitalPin.P8
+    let _nrfCSN: DigitalPin = DigitalPin.P16
+    let _nrfChannel: number = 76
+    let _nrfPayloadSize: number = 32
+    let _nrfDataReceived: boolean = false
+    let _nrfRxBuffer: number[] = []
+
+    // nRF24L01 모드
+    export enum NRFMode {
+        //% block="TX (TX)"
+        Transmit = 0,
+        //% block="receive (RX)"
+        Receive = 1
+    }
+
+    // nRF24L01 전송 속도
+    export enum NRFDataRate {
+        //% block="1Mbps"
+        Rate1Mbps = 0,
+        //% block="2Mbps"
+        Rate2Mbps = 1,
+        //% block="250Kbps"
+        Rate250Kbps = 2
+    }
+
+    // nRF24L01 출력 세기
+    export enum NRFPower {
+        //% block="max (0dBm)"
+        Max = 3,
+        //% block="high (-6dBm)"
+        High = 2,
+        //% block="medium (-12dBm)"
+        Medium = 1,
+        //% block="low (-18dBm)"
+        Low = 0
+    }
+
+    //% block="nRF24L01 set|CE pin %ce|CSN pin %csn|channel %channel"
+    //% ce.defl=DigitalPin.P8
+    //% csn.defl=DigitalPin.P16
+    //% channel.defl=76 channel.min=0 channel.max=125
+    //% group="nRF24L01" weight=77
+    //% inlineInputMode=inline
+    export function nrf24l01Init(ce: DigitalPin, csn: DigitalPin, channel: number): void {
+        _nrfCE = ce
+        _nrfCSN = csn
+        _nrfChannel = channel
+
+        // 핀 초기화
+        pins.digitalWritePin(_nrfCE, 0)
+        pins.digitalWritePin(_nrfCSN, 1)
+
+        basic.pause(100)
+
+        // 레지스터 초기화
+        nrfWriteReg(0x00, 0x0C)  // CONFIG: CRC 활성화, PWR_UP
+        nrfWriteReg(0x01, 0x3F)  // EN_AA: 자동 ACK 활성화
+        nrfWriteReg(0x02, 0x03)  // EN_RXADDR: 파이프 0,1 활성화
+        nrfWriteReg(0x03, 0x03)  // SETUP_AW: 5바이트 주소
+        nrfWriteReg(0x04, 0x03)  // SETUP_RETR: 재전송 설정
+        nrfWriteReg(0x05, channel) // RF_CH: 채널 설정
+        nrfWriteReg(0x06, 0x07)  // RF_SETUP: 1Mbps, 0dBm
+        nrfWriteReg(0x11, _nrfPayloadSize)  // RX_PW_P0
+
+        // FIFO 클리어
+        nrfFlushTx()
+        nrfFlushRx()
+        nrfWriteReg(0x07, 0x70)  // STATUS: 플래그 클리어
+
+        basic.pause(10)
+    }
+
+    //% block="nRF24L01 mode set %mode"
+    //% group="nRF24L01" weight=76
+    export function nrf24l01SetMode(mode: NRFMode): void {
+        let config = nrfReadReg(0x00)
+        if (mode == NRFMode.Receive) {
+            config |= 0x01  // PRIM_RX = 1
+            nrfWriteReg(0x00, config)
+            pins.digitalWritePin(_nrfCE, 1)  // RX 모드 시작
+        } else {
+            config &= 0xFE  // PRIM_RX = 0
+            nrfWriteReg(0x00, config)
+            pins.digitalWritePin(_nrfCE, 0)
+        }
+        basic.pause(2)
+    }
+
+    //% block="nRF24L01 address set %addr"
+    //% addr.defl="BRIX1"
+    //% group="nRF24L01" weight=75
+    export function nrf24l01SetAddress(addr: string): void {
+        // 5바이트 주소 설정
+        let addrBytes: number[] = []
+        for (let i = 0; i < 5; i++) {
+            addrBytes.push(i < addr.length ? addr.charCodeAt(i) : 0)
+        }
+
+        // TX 주소와 RX 파이프 0 주소 설정
+        pins.digitalWritePin(_nrfCSN, 0)
+        pins.spiWrite(0x20 | 0x10)  // W_REGISTER | TX_ADDR
+        for (let byte of addrBytes) {
+            pins.spiWrite(byte)
+        }
+        pins.digitalWritePin(_nrfCSN, 1)
+
+        pins.digitalWritePin(_nrfCSN, 0)
+        pins.spiWrite(0x20 | 0x0A)  // W_REGISTER | RX_ADDR_P0
+        for (let byte of addrBytes) {
+            pins.spiWrite(byte)
+        }
+        pins.digitalWritePin(_nrfCSN, 1)
+    }
+
+    //% block="nRF24L01 string send %text"
+    //% text.defl="Hello"
+    //% group="nRF24L01" weight=74
+    export function nrf24l01SendString(text: string): boolean {
+        let payload: number[] = []
+        for (let i = 0; i < _nrfPayloadSize; i++) {
+            payload.push(i < text.length ? text.charCodeAt(i) : 0)
+        }
+        return nrfSendPayload(payload)
+    }
+
+    //% block="nRF24L01 number send %value"
+    //% group="nRF24L01" weight=73
+    export function nrf24l01SendNumber(value: number): boolean {
+        return nrf24l01SendString("" + value)
+    }
+
+    //% block="nRF24L01 data receive?"
+    //% group="nRF24L01" weight=72
+    export function nrf24l01DataReady(): boolean {
+        let status = nrfReadReg(0x07)
+        return (status & 0x40) != 0  // RX_DR 플래그
+    }
+
+    //% block="nRF24L01 string receive"
+    //% group="nRF24L01" weight=71
+    export function nrf24l01ReceiveString(): string {
+        if (!nrf24l01DataReady()) return ""
+
+        // 데이터 읽기
+        pins.digitalWritePin(_nrfCSN, 0)
+        pins.spiWrite(0x61)  // R_RX_PAYLOAD
+        let result = ""
+        for (let i = 0; i < _nrfPayloadSize; i++) {
+            let byte = pins.spiWrite(0xFF)
+            if (byte > 0 && byte < 128) {
+                result += String.fromCharCode(byte)
             }
-
-            // HIGH 구간 측정 (0: 562.5us, 1: 1687.5us)
-            startTime = input.runningTimeMicros()
-            while (pins.digitalReadPin(_irPin) == 1) {
-                if (input.runningTimeMicros() - startTime > 2000) return 0
-            }
-            let bitTime = input.runningTimeMicros() - startTime
-
-            // 비트 판별
-            if (bitTime > 1000) {
-                data |= (1 << i)
-            }
         }
+        pins.digitalWritePin(_nrfCSN, 1)
 
-        return data
+        // 플래그 클리어
+        nrfWriteReg(0x07, 0x40)
+
+        return result
     }
 
-    // IR 코드를 버튼 번호로 변환 (내부 함수)
-    function irCodeToButton(code: number): number {
-        for (let i = 0; i < IR_CODE_MAP.length; i++) {
-            if (IR_CODE_MAP[i] == code) {
-                return i
-            }
-        }
-        return IRButton.Other
+    //% block="nRF24L01 number receive"
+    //% group="nRF24L01" weight=70
+    export function nrf24l01ReceiveNumber(): number {
+        let str = nrf24l01ReceiveString()
+        let num = parseFloat(str)
+        return isNaN(num) ? 0 : num
     }
 
-    //% block="IR TX code %code|pin %pin"
-    //% code.defl=0
-    //% pin.defl=DigitalPin.P12
-    //% group="Infrared" weight=39
-    export function irTransmit(code: number, pin: DigitalPin): void {
-        // NEC 프로토콜 송신
-        // 리더 펄스 (9ms 38kHz, 4.5ms OFF)
-        irCarrier(pin, 9000)
-        control.waitMicros(4500)
-
-        // 32비트 데이터 전송
-        for (let i = 0; i < 32; i++) {
-            // 562.5us 캐리어
-            irCarrier(pin, 562)
-
-            // 데이터 비트에 따라 대기
-            if (code & (1 << i)) {
-                control.waitMicros(1687)  // 1
-            } else {
-                control.waitMicros(562)   // 0
-            }
-        }
-
-        // 종료 펄스
-        irCarrier(pin, 562)
+    // nRF24L01 내부 함수들
+    function nrfWriteReg(reg: number, value: number): void {
+        pins.digitalWritePin(_nrfCSN, 0)
+        pins.spiWrite(0x20 | reg)
+        pins.spiWrite(value)
+        pins.digitalWritePin(_nrfCSN, 1)
     }
 
-    // 38kHz 캐리어 생성 (내부 함수)
-    function irCarrier(pin: DigitalPin, durationUs: number): void {
-        let cycles = Math.floor(durationUs / 26)  // 38kHz = 26us 주기
-        for (let i = 0; i < cycles; i++) {
-            pins.digitalWritePin(pin, 1)
-            control.waitMicros(13)
-            pins.digitalWritePin(pin, 0)
-            control.waitMicros(13)
+    function nrfReadReg(reg: number): number {
+        pins.digitalWritePin(_nrfCSN, 0)
+        pins.spiWrite(reg)
+        let value = pins.spiWrite(0xFF)
+        pins.digitalWritePin(_nrfCSN, 1)
+        return value
+    }
+
+    function nrfFlushTx(): void {
+        pins.digitalWritePin(_nrfCSN, 0)
+        pins.spiWrite(0xE1)
+        pins.digitalWritePin(_nrfCSN, 1)
+    }
+
+    function nrfFlushRx(): void {
+        pins.digitalWritePin(_nrfCSN, 0)
+        pins.spiWrite(0xE2)
+        pins.digitalWritePin(_nrfCSN, 1)
+    }
+
+    function nrfSendPayload(payload: number[]): boolean {
+        // TX FIFO에 데이터 쓰기
+        pins.digitalWritePin(_nrfCSN, 0)
+        pins.spiWrite(0xA0)  // W_TX_PAYLOAD
+        for (let byte of payload) {
+            pins.spiWrite(byte)
         }
+        pins.digitalWritePin(_nrfCSN, 1)
+
+        // 전송 시작
+        pins.digitalWritePin(_nrfCE, 1)
+        control.waitMicros(15)
+        pins.digitalWritePin(_nrfCE, 0)
+
+        // 전송 완료 대기
+        basic.pause(10)
+        let status = nrfReadReg(0x07)
+
+        // 플래그 클리어
+        nrfWriteReg(0x07, 0x30)
+
+        return (status & 0x20) != 0  // TX_DS 플래그
+    }
+
+
+    /********** LoRa 장거리 무선 모듈 **********/
+
+    // LoRa는 장거리 저전력 무선 통신 모듈입니다.
+    // 최대 10km 이상 통신 가능 (환경에 따라 다름)
+    // SX1276/SX1278 또는 Ra-02 모듈 사용
+
+    // LoRa 핀 저장 변수
+    let _loraTx: SerialPin = SerialPin.P1
+    let _loraRx: SerialPin = SerialPin.P2
+    let _loraChannel: number = 0
+    let _loraAddress: number = 0
+
+    //% block="LoRa set|TX pin %tx|RX pin %rx|channel %channel|address %addr"
+    //% tx.defl=SerialPin.P1
+    //% rx.defl=SerialPin.P2
+    //% channel.defl=0 channel.min=0 channel.max=31
+    //% addr.defl=0 addr.min=0 addr.max=65535
+    //% group="LoRa" weight=69
+    //% inlineInputMode=inline
+    export function loraInit(tx: SerialPin, rx: SerialPin, channel: number, addr: number): void {
+        _loraTx = tx
+        _loraRx = rx
+        _loraChannel = channel
+        _loraAddress = addr
+
+        serial.redirect(tx, rx, BaudRate.BaudRate9600)
+        basic.pause(100)
+    }
+
+    //% block="LoRa string send %text"
+    //% text.defl="Hello"
+    //% group="LoRa" weight=68
+    export function loraSendString(text: string): void {
+        serial.writeLine(text)
+    }
+
+    //% block="LoRa number send %value"
+    //% group="LoRa" weight=67
+    export function loraSendNumber(value: number): void {
+        serial.writeLine("" + value)
+    }
+
+    //% block="LoRa data receive"
+    //% group="LoRa" weight=66
+    export function loraReceive(): string {
+        return serial.readLine()
+    }
+
+    //% block="LoRa target address set %addr"
+    //% addr.defl=0 addr.min=0 addr.max=65535
+    //% group="LoRa" weight=65
+    export function loraSetTarget(addr: number): void {
+        // AT 명령어로 대상 주소 설정 (모듈에 따라 다름)
+        serial.writeLine("AT+ADDR=" + addr)
+        basic.pause(100)
     }
 }

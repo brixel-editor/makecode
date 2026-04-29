@@ -44,9 +44,8 @@ BRIXEL Extension is a comprehensive MakeCode extension for micro:bit that provid
 | 07 | **Communications** | 통신장치 | 6 types | 🟣 Purple | 📡 |
 | 08 | **WiFi** | 와이파이 | 1 type | 🔵 Blue | 📶 |
 | 09 | **USB Serial** | 시리얼 | 1 type | 🔵 Blue | 🔌 |
-| 10 | **Bluetooth** | 블루투스 | 1 type | 🔵 Blue | 📶 |
 
-**Total: 93+ devices across 10 categories**
+**Total: 92+ devices across 9 categories**
 
 ---
 
@@ -247,15 +246,6 @@ BRIXEL Extension is a comprehensive MakeCode extension for micro:bit that provid
 
 ---
 
-### 10. Bluetooth (블루투스)
-
-**Web BLE**
-- Web Bluetooth (Web BLE) communication
-- Web Serial-like data exchange via Bluetooth Low Energy (BLE)
-- Compatible with Chrome Web BLE API
-
----
-
 ## 🌐 Language Support
 
 This extension provides **complete bilingual support**:
@@ -331,7 +321,6 @@ brixel-ext/
 ├── 07_communications.ts     # nRF24L01, LoRa, RFID, GPS, IR
 ├── 08_wifi.ts               # ESP8266/ESP32 WiFi
 ├── 09_usb_serial.ts         # Serial communication
-├── 10_bluetooth.ts          # Web BLE Bluetooth communication
 ├── main.ts                  # Main entry point
 ├── pxt.json                 # Extension configuration
 ├── README.md                # This file
@@ -353,7 +342,7 @@ Each category uses a distinct color for easy visual identification:
 - 🔵 **Adv Sensors**: Blue (`#4D68EC`)
 - 🟢 **Actuators & Output Device**: Green (`#50B91A`)
 - 🟣 **Communications**: Purple (`#F75ACF`)
-- 🔵 **WiFi, USB Serial & Bluetooth**: Blue (`#4285F4`)
+- 🔵 **WiFi & USB Serial**: Blue (`#4285F4`)
 
 ---
 

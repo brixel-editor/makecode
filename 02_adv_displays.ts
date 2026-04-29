@@ -20,7 +20,7 @@ namespace AdvDisplays {
         SH1106 = 1
     }
 
-    // OLED 해상도
+    // OLED 해상도 (SSD1306용)
     export enum OLEDSize {
         //% block="128x64 (0.96inch)"
         Size128x64 = 0,
@@ -28,6 +28,22 @@ namespace AdvDisplays {
         Size128x32 = 1,
         //% block="64x128 (vertical)"
         Size64x128 = 2
+    }
+
+    // SSD1306 OLED 해상도
+    export enum SSD1306Size {
+        //% block="128x64 (0.96inch)"
+        Size128x64_096 = 0,
+        //% block="128x32 (0.91inch)"
+        Size128x32_091 = 1,
+        //% block="64x128 (vertical)"
+        Size64x128 = 2
+    }
+
+    // SH1106 OLED 해상도 (1.3인치 전용)
+    export enum SH1106Size {
+        //% block="128x64 (1.3inch)"
+        Size128x64_13 = 0
     }
 
     // OLED 색상
@@ -44,10 +60,48 @@ namespace AdvDisplays {
     let _oledHeight: number = 64
     let _oledDriver: OLEDDriver = OLEDDriver.SSD1306
 
+    //% block="OLED(SSD1306) init address %addr size %size"
+    //% addr.defl=60
+    //% group="OLED" weight=92
+    //% inlineInputMode=inline
+    export function oledInitSSD1306(addr: number, size: SSD1306Size): void {
+        _oledAddr = addr
+        _oledDriver = OLEDDriver.SSD1306
+
+        if (size == SSD1306Size.Size128x64_096) {
+            _oledWidth = 128
+            _oledHeight = 64
+        } else if (size == SSD1306Size.Size128x32_091) {
+            _oledWidth = 128
+            _oledHeight = 32
+        } else {
+            _oledWidth = 64
+            _oledHeight = 128
+        }
+
+        oledInitSequence()
+    }
+
+    //% block="OLED(SH1106) init address %addr size %size"
+    //% addr.defl=60
+    //% group="OLED" weight=91
+    //% inlineInputMode=inline
+    export function oledInitSH1106(addr: number, size: SH1106Size): void {
+        _oledAddr = addr
+        _oledDriver = OLEDDriver.SH1106
+
+        // SH1106 is always 128x64 (1.3 inch)
+        _oledWidth = 128
+        _oledHeight = 64
+
+        oledInitSequence()
+    }
+
     //% block="OLED init address %addr driver %driver level %size"
     //% addr.defl=60
     //% group="OLED" weight=90
     //% inlineInputMode=inline
+    //% deprecated=true
     export function oledInit(addr: number, driver: OLEDDriver, size: OLEDSize): void {
         _oledAddr = addr
         _oledDriver = driver
@@ -63,6 +117,11 @@ namespace AdvDisplays {
             _oledHeight = 128
         }
 
+        oledInitSequence()
+    }
+
+    // OLED 초기화 시퀀스 (내부 함수)
+    function oledInitSequence(): void {
         // 초기화 명령 시퀀스
         oledCmd(0xAE)  // 디스플레이 OFF
         oledCmd(0xD5)  // 클럭 분주비
@@ -725,7 +784,7 @@ namespace AdvDisplays {
     //% brightness.defl=15 brightness.min=0 brightness.max=15
     //% blink.shadow="toggleOnOff" blink.defl=false
     //% rotation.defl=0 rotation.min=0 rotation.max=3
-    //% group="도트매트릭스(I2C-HT16K33)" weight=66
+    //% group="도트매트릭스(I2C-HT16K33)" weight=86
     //% inlineInputMode=inline
     export function ht16k33Init(num: number, size: HT16K33Size, addr: number, brightness: number, blink: boolean, rotation: number): void {
         _ht16k33Addr = addr
@@ -751,7 +810,7 @@ namespace AdvDisplays {
     //% num.defl=1
     //% text.defl="Hello"
     //% speed.defl=0.2
-    //% group="도트매트릭스(I2C-HT16K33)" weight=65
+    //% group="도트매트릭스(I2C-HT16K33)" weight=85
     //% inlineInputMode=inline
     export function ht16k33ShowText(num: number, text: string, scroll: HT16K33Scroll, speed: number): void {
         text = text.toUpperCase()
@@ -771,7 +830,7 @@ namespace AdvDisplays {
 
     //% block="I2C matrix %num |screenat show"
     //% num.defl=1
-    //% group="도트매트릭스(I2C-HT16K33)" weight=64
+    //% group="도트매트릭스(I2C-HT16K33)" weight=84
     export function ht16k33Refresh(num: number): void {
         // 버퍼를 I2C로 전송
         let buf = pins.createBuffer(17)
@@ -783,7 +842,7 @@ namespace AdvDisplays {
     }
 
     //% block="I2C matrix screen clear"
-    //% group="도트매트릭스(I2C-HT16K33)" weight=63
+    //% group="도트매트릭스(I2C-HT16K33)" weight=83
     export function ht16k33Clear(): void {
         for (let i = 0; i < 16; i++) {
             _ht16k33Buffer[i] = 0
@@ -793,7 +852,7 @@ namespace AdvDisplays {
 
     //% block="I2C matrix brightness(0-15) %brightness"
     //% brightness.defl=15 brightness.min=0 brightness.max=15
-    //% group="도트매트릭스(I2C-HT16K33)" weight=62
+    //% group="도트매트릭스(I2C-HT16K33)" weight=82
     export function ht16k33SetBrightness(brightness: number): void {
         _ht16k33Brightness = Math.clamp(0, 15, brightness)
         pins.i2cWriteNumber(_ht16k33Addr, 0xE0 | _ht16k33Brightness, NumberFormat.UInt8BE)
@@ -801,7 +860,7 @@ namespace AdvDisplays {
 
     //% block="I2C matrix blink %blink"
     //% blink.shadow="toggleOnOff" blink.defl=false
-    //% group="도트매트릭스(I2C-HT16K33)" weight=61
+    //% group="도트매트릭스(I2C-HT16K33)" weight=81
     export function ht16k33SetBlink(blink: boolean): void {
         _ht16k33Blink = blink ? 1 : 0
         // 0x81: ON 깜빡임 없음, 0x83: ON 2Hz 깜빡임
@@ -813,7 +872,7 @@ namespace AdvDisplays {
     //% row.min=0 row.max=7 row.defl=0
     //% col.min=0 col.max=7 col.defl=0
     //% state.shadow="toggleOnOff" state.defl=true
-    //% group="도트매트릭스(I2C-HT16K33)" weight=60
+    //% group="도트매트릭스(I2C-HT16K33)" weight=80
     //% inlineInputMode=inline
     export function ht16k33SetPixel(num: number, row: number, col: number, state: boolean): void {
         if (row < 0 || row > 7 || col < 0 || col > 7) return
@@ -830,7 +889,7 @@ namespace AdvDisplays {
     //% num.defl=1
     //% row.min=0 row.max=7 row.defl=0
     //% col.min=0 col.max=7 col.defl=0
-    //% group="도트매트릭스(I2C-HT16K33)" weight=59
+    //% group="도트매트릭스(I2C-HT16K33)" weight=79
     //% inlineInputMode=inline
     export function ht16k33SetBicolorPixel(num: number, row: number, col: number, color: HT16K33Color): void {
         if (row < 0 || row > 7 || col < 0 || col > 7) return
@@ -860,7 +919,7 @@ namespace AdvDisplays {
     //% y1.min=0 y1.max=7 y1.defl=0
     //% x2.min=0 x2.max=7 x2.defl=7
     //% y2.min=0 y2.max=7 y2.defl=7
-    //% group="도트매트릭스(I2C-HT16K33)" weight=58
+    //% group="도트매트릭스(I2C-HT16K33)" weight=78
     //% inlineInputMode=inline
     export function ht16k33DrawLine(num: number, x1: number, y1: number, x2: number, y2: number): void {
         // Bresenham's line algorithm
@@ -891,7 +950,7 @@ namespace AdvDisplays {
     //% cx.min=0 cx.max=7 cx.defl=3
     //% cy.min=0 cy.max=7 cy.defl=3
     //% r.min=1 r.max=4 r.defl=3
-    //% group="도트매트릭스(I2C-HT16K33)" weight=57
+    //% group="도트매트릭스(I2C-HT16K33)" weight=77
     //% inlineInputMode=inline
     export function ht16k33DrawCircle(num: number, cx: number, cy: number, r: number): void {
         // Midpoint circle algorithm
@@ -924,7 +983,7 @@ namespace AdvDisplays {
     //% y.min=0 y.max=7 y.defl=0
     //% w.min=1 w.max=8 w.defl=4
     //% h.min=1 h.max=8 h.defl=4
-    //% group="도트매트릭스(I2C-HT16K33)" weight=56
+    //% group="도트매트릭스(I2C-HT16K33)" weight=76
     //% inlineInputMode=inline
     export function ht16k33DrawRect(num: number, x: number, y: number, w: number, h: number, style: HT16K33RectStyle): void {
         if (style == HT16K33RectStyle.Outline) {
@@ -949,7 +1008,7 @@ namespace AdvDisplays {
 
     //% block="I2C matrix %num |fill all"
     //% num.defl=1
-    //% group="도트매트릭스(I2C-HT16K33)" weight=55
+    //% group="도트매트릭스(I2C-HT16K33)" weight=75
     export function ht16k33Fill(num: number): void {
         for (let i = 0; i < 16; i++) {
             _ht16k33Buffer[i] = 0xFF

@@ -8,27 +8,7 @@
     "icon": "./icon.png",
     "dependencies": {
         "core": "*",
-        "microbit": "*",
-        "bluetooth": "*"
-    },
-    "yotta": {
-        "configIsJustDefaults": true,
-        "config": {
-            "microbit-dal": {
-                "bluetooth": {
-                    "enabled": 1,
-                    "pairing_mode": 0,
-                    "private_addressing": 0,
-                    "open": 1,
-                    "whitelist": 0,
-                    "advertising_timeout": 0,
-                    "tx_power": 6,
-                    "dfu_service": 0,
-                    "event_service": 1,
-                    "device_info_service": 1
-                }
-            }
-        }
+        "microbit": "*"
     },
     "files": [
         "main.ts",
@@ -41,7 +21,6 @@
         "07_communications.ts",
         "08_wifi.ts",
         "09_usb_serial.ts",
-        "10_bluetooth.ts",
         "README.md",
         "icon.png",
         "_locales/en/brixel-ext-strings.json",

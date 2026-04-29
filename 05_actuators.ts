@@ -4,7 +4,7 @@
  */
 
 //% weight=1060 color=#50B91A icon="\uf013" block="05. Actuators"
-//% groups="['Servo Motors', 'Stepper Motors', 'DC모터(L298N)', 'DC모터(L293D)', '듀얼 H-브리지 모터(TB6612FNG)', '듀얼 H-브리지 DC 모터(DRV8833)', 'Relays', 'Solenoid', 'Fan모터', 'Pump모터']"
+//% groups="['Servo Motors', '5Kg GeekServo', 'Green GeekServo', 'Stepper Motors', 'DC모터(L298N)', 'DC모터(L293D)', '듀얼 H-브리지 모터(TB6612FNG)', '듀얼 H-브리지 DC 모터(DRV8833)', 'DC모터 드라이버(PCA9685)', 'Relays', 'Solenoid', 'Fan모터', 'Pump모터']"
 namespace Actuators05 {
 
 
@@ -430,6 +430,309 @@ namespace Actuators05 {
     export function servoSetPulse(pin: AnalogPin, pulse: number): void {
         pins.servoSetPulse(pin, pulse)
     }
+
+    /********** 5Kg GeekServo (360도 서보/DC모터 모드) **********/
+
+    // GeekServo 방향
+    export enum GeekServoDir {
+        //% block="forward (CW)"
+        CW = 0,
+        //% block="backward (CCW)"
+        CCW = 1
+    }
+
+    //% block="5Kg GeekServo setup pin %pin"
+    //% group="5Kg GeekServo" weight=60
+    export function geekServoSetup(pin: AnalogPin): void {
+        // 초기 중립 펄스 전송하여 서보 초기화
+        pins.servoSetPulse(pin, 1500)
+    }
+
+    //% block="5Kg GeekServo pin %pin set angle %degrees (0~360)"
+    //% degrees.min=0 degrees.max=360 degrees.defl=0
+    //% group="5Kg GeekServo" weight=59
+    //% inlineInputMode=inline
+    export function geekServoAngle360(pin: AnalogPin, degrees: number): void {
+        if (degrees < 0) degrees = 0
+        if (degrees > 360) degrees = 360
+
+        // 구간별 매핑 (Piecewise Mapping) - Arduino 라이브러리와 동일
+        let p0 = 500
+        let p90 = 990
+        let p180 = 1510
+        let p270 = 2020
+        let p360 = 2500
+        let us = 1500
+
+        if (degrees <= 90) {
+            us = Math.map(degrees, 0, 90, p0, p90)
+        } else if (degrees <= 180) {
+            us = Math.map(degrees, 90, 180, p90, p180)
+        } else if (degrees <= 270) {
+            us = Math.map(degrees, 180, 270, p180, p270)
+        } else {
+            us = Math.map(degrees, 270, 360, p270, p360)
+        }
+
+        pins.servoSetPulse(pin, us)
+    }
+
+    //% block="5Kg GeekServo wheel pin %pin speed %speed direction %dir"
+    //% speed.min=0 speed.max=100 speed.defl=100
+    //% group="5Kg GeekServo" weight=58
+    //% inlineInputMode=inline
+    export function geekServoWheel(pin: AnalogPin, speed: number, dir: GeekServoDir): void {
+        if (speed < 0) speed = 0
+        if (speed > 100) speed = 100
+
+        let us = 4000 // 중립 (정지)
+        if (dir == GeekServoDir.CW) {
+            us = Math.map(speed, 0, 100, 4000, 5000)
+        } else {
+            us = Math.map(speed, 0, 100, 4000, 3000)
+        }
+
+        pins.servoSetPulse(pin, us)
+    }
+
+    //% block="5Kg GeekServo wheel pin %pin speed %speed direction %dir duration %duration ms"
+    //% speed.min=0 speed.max=100 speed.defl=100
+    //% duration.defl=1000
+    //% group="5Kg GeekServo" weight=57
+    //% inlineInputMode=inline
+    export function geekServoWheelTimed(pin: AnalogPin, speed: number, dir: GeekServoDir, duration: number): void {
+        geekServoWheel(pin, speed, dir)
+        basic.pause(duration)
+        geekServoWheel(pin, 0, GeekServoDir.CW)
+    }
+
+    //% block="5Kg GeekServo stop pin %pin"
+    //% group="5Kg GeekServo" weight=56
+    export function geekServoStop(pin: AnalogPin): void {
+        pins.servoSetPulse(pin, 4000)
+    }
+
+
+    /********** Green GeekServo (연속회전 서보, 500~2500μs) **********/
+
+    //% block="Green GeekServo setup pin %pin"
+    //% group="Green GeekServo" weight=55
+    export function greenGeekServoSetup(pin: AnalogPin): void {
+        pins.servoSetPulse(pin, 1500)
+    }
+
+    //% block="Green GeekServo wheel pin %pin speed %speed direction %dir"
+    //% speed.min=0 speed.max=100 speed.defl=100
+    //% group="Green GeekServo" weight=54
+    //% inlineInputMode=inline
+    export function greenGeekServoWheel(pin: AnalogPin, speed: number, dir: GeekServoDir): void {
+        if (speed < 0) speed = 0
+        if (speed > 100) speed = 100
+
+        let us = 1500 // 중립 (정지)
+        if (dir == GeekServoDir.CW) {
+            us = Math.map(speed, 0, 100, 1500, 2500)
+        } else {
+            us = Math.map(speed, 0, 100, 1500, 500)
+        }
+
+        pins.servoSetPulse(pin, us)
+    }
+
+    //% block="Green GeekServo wheel pin %pin speed %speed direction %dir duration %duration ms"
+    //% speed.min=0 speed.max=100 speed.defl=100
+    //% duration.defl=1000
+    //% group="Green GeekServo" weight=53
+    //% inlineInputMode=inline
+    export function greenGeekServoWheelTimed(pin: AnalogPin, speed: number, dir: GeekServoDir, duration: number): void {
+        greenGeekServoWheel(pin, speed, dir)
+        basic.pause(duration)
+        greenGeekServoWheel(pin, 0, GeekServoDir.CW)
+    }
+
+    //% block="Green GeekServo stop pin %pin"
+    //% group="Green GeekServo" weight=52
+    export function greenGeekServoStop(pin: AnalogPin): void {
+        pins.servoSetPulse(pin, 1500)
+    }
+
+
+    /********** DC모터 드라이버 (PCA9685) **********/
+
+    // PCA9685 상태 저장
+    let _pca9685Addr: number[] = [0x40, 0x40, 0x40, 0x40]
+    let _pca9685Initialized: boolean[] = [false, false, false, false]
+
+    // PCA9685 레지스터
+    const PCA9685_MODE1 = 0x00
+    const PCA9685_PRESCALE = 0xFE
+    const PCA9685_LED0_ON_L = 0x06
+
+    // PCA9685 채널 하나에 PWM 설정
+    function pca9685SetPWM(addr: number, channel: number, on: number, off: number): void {
+        let reg = PCA9685_LED0_ON_L + 4 * channel
+        let buf = pins.createBuffer(5)
+        buf[0] = reg
+        buf[1] = on & 0xFF
+        buf[2] = (on >> 8) & 0xFF
+        buf[3] = off & 0xFF
+        buf[4] = (off >> 8) & 0xFF
+        pins.i2cWriteBuffer(addr, buf)
+    }
+
+    // PCA9685 채널에 값 설정 (0~4095)
+    function pca9685SetPin(addr: number, channel: number, value: number): void {
+        if (value >= 4095) {
+            pca9685SetPWM(addr, channel, 4096, 0)
+        } else if (value <= 0) {
+            pca9685SetPWM(addr, channel, 0, 0)
+        } else {
+            pca9685SetPWM(addr, channel, 0, value)
+        }
+    }
+
+    // PCA9685 초기화
+    function pca9685Init(addr: number): void {
+        // Reset
+        let buf = pins.createBuffer(2)
+        buf[0] = PCA9685_MODE1
+        buf[1] = 0x00
+        pins.i2cWriteBuffer(addr, buf)
+        basic.pause(5)
+
+        // Sleep mode for prescale setting
+        buf[0] = PCA9685_MODE1
+        buf[1] = 0x10 // sleep
+        pins.i2cWriteBuffer(addr, buf)
+
+        // Set prescale for ~1000Hz (for DC motor PWM)
+        // prescale = round(25MHz / (4096 * freq)) - 1
+        // for 1000Hz: round(25000000 / (4096 * 1000)) - 1 = 5
+        buf[0] = PCA9685_PRESCALE
+        buf[1] = 5
+        pins.i2cWriteBuffer(addr, buf)
+
+        // Restart
+        buf[0] = PCA9685_MODE1
+        buf[1] = 0xA0 // auto-increment + restart
+        pins.i2cWriteBuffer(addr, buf)
+        basic.pause(5)
+    }
+
+    // PCA9685 모터 정지 대상
+    export enum PCA9685StopTarget {
+        //% block="All"
+        All = 0,
+        //% block="Wheel A"
+        WheelA = 1,
+        //% block="Wheel B"
+        WheelB = 2
+    }
+
+    //% block="DC Motor Driver(PCA9685) %index I2C address %addr"
+    //% index.min=1 index.max=4 index.defl=1
+    //% addr.defl=0x40
+    //% group="DC모터 드라이버(PCA9685)" weight=50
+    //% inlineInputMode=inline
+    export function pca9685DcMotorSetup(index: number, addr: number): void {
+        let i = index - 1
+        _pca9685Addr[i] = addr
+        pca9685Init(addr)
+        _pca9685Initialized[i] = true
+    }
+
+    //% block="Motor Driver %index Wheel A direction %dir speed %speed \\%"
+    //% index.min=1 index.max=4 index.defl=1
+    //% dir.min=0 dir.max=1 dir.defl=0
+    //% speed.min=0 speed.max=100 speed.defl=50
+    //% group="DC모터 드라이버(PCA9685)" weight=49
+    //% inlineInputMode=inline
+    export function pca9685DcMotorWheelA(index: number, dir: number, speed: number): void {
+        let i = index - 1
+        let addr = _pca9685Addr[i]
+        let spd = Math.map(Math.constrain(speed, 0, 100), 0, 100, 0, 4095)
+
+        // CH0: IN1, CH1: PWM(속도), CH2: IN2
+        if (dir == 0) {
+            pca9685SetPin(addr, 0, 4095)
+            pca9685SetPin(addr, 1, spd)
+            pca9685SetPin(addr, 2, 0)
+        } else {
+            pca9685SetPin(addr, 0, 0)
+            pca9685SetPin(addr, 1, spd)
+            pca9685SetPin(addr, 2, 4095)
+        }
+    }
+
+    //% block="Motor Driver %index Wheel B direction %dir speed %speed \\%"
+    //% index.min=1 index.max=4 index.defl=1
+    //% dir.min=0 dir.max=1 dir.defl=0
+    //% speed.min=0 speed.max=100 speed.defl=50
+    //% group="DC모터 드라이버(PCA9685)" weight=48
+    //% inlineInputMode=inline
+    export function pca9685DcMotorWheelB(index: number, dir: number, speed: number): void {
+        let i = index - 1
+        let addr = _pca9685Addr[i]
+        let spd = Math.map(Math.constrain(speed, 0, 100), 0, 100, 0, 4095)
+
+        // CH3: IN1, CH4: PWM(속도), CH5: IN2 - B모터 방향 반전
+        if (dir == 0) {
+            pca9685SetPin(addr, 3, 0)
+            pca9685SetPin(addr, 4, spd)
+            pca9685SetPin(addr, 5, 4095)
+        } else {
+            pca9685SetPin(addr, 3, 4095)
+            pca9685SetPin(addr, 4, spd)
+            pca9685SetPin(addr, 5, 0)
+        }
+    }
+
+    //% block="Motor Driver %index stop %target"
+    //% index.min=1 index.max=4 index.defl=1
+    //% group="DC모터 드라이버(PCA9685)" weight=47
+    //% inlineInputMode=inline
+    export function pca9685DcMotorStop(index: number, target: PCA9685StopTarget): void {
+        let i = index - 1
+        let addr = _pca9685Addr[i]
+
+        if (target == PCA9685StopTarget.All || target == PCA9685StopTarget.WheelA) {
+            pca9685SetPin(addr, 0, 0)
+            pca9685SetPin(addr, 1, 0)
+            pca9685SetPin(addr, 2, 0)
+        }
+        if (target == PCA9685StopTarget.All || target == PCA9685StopTarget.WheelB) {
+            pca9685SetPin(addr, 3, 0)
+            pca9685SetPin(addr, 4, 0)
+            pca9685SetPin(addr, 5, 0)
+        }
+    }
+
+    //% block="Motor Driver %index Wheel A direction %dir speed %speed \\% duration %duration ms"
+    //% index.min=1 index.max=4 index.defl=1
+    //% dir.min=0 dir.max=1 dir.defl=0
+    //% speed.min=0 speed.max=100 speed.defl=50
+    //% duration.defl=1000
+    //% group="DC모터 드라이버(PCA9685)" weight=46
+    //% inlineInputMode=inline
+    export function pca9685DcMotorWheelATimed(index: number, dir: number, speed: number, duration: number): void {
+        pca9685DcMotorWheelA(index, dir, speed)
+        basic.pause(duration)
+        pca9685DcMotorStop(index, PCA9685StopTarget.WheelA)
+    }
+
+    //% block="Motor Driver %index Wheel B direction %dir speed %speed \\% duration %duration ms"
+    //% index.min=1 index.max=4 index.defl=1
+    //% dir.min=0 dir.max=1 dir.defl=0
+    //% speed.min=0 speed.max=100 speed.defl=50
+    //% duration.defl=1000
+    //% group="DC모터 드라이버(PCA9685)" weight=45
+    //% inlineInputMode=inline
+    export function pca9685DcMotorWheelBTimed(index: number, dir: number, speed: number, duration: number): void {
+        pca9685DcMotorWheelB(index, dir, speed)
+        basic.pause(duration)
+        pca9685DcMotorStop(index, PCA9685StopTarget.WheelB)
+    }
+
 
     // 28BYJ-48, NEMA17은 위의 통합 스테퍼 시스템 사용
 

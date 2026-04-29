@@ -1,112 +1,152 @@
 /**
- * BRIXEL Extension - 10. Bluetooth (Web BLE)
- * Compatible with Arduino Web BLE Blocks
+ * BRIXEL Extension - 10. Bluetooth (v3.0 — 브릭셀AI 호환)
+ * micro:bit 내장 BLE Nordic UART Service wrapper
+ *
+ * 브릭셀AI WebBLE → micro:bit "BBC micro:bit [코드]" 선택 → 즉시 연결
+ * (페어링 다이얼로그 없음 — pxt.json yotta config: pairing_mode=0, open=1)
+ *
+ * 핵심 변경 (기존 bluetooth 확장 대비):
+ *  - 송신: BT [값] 보내기 1블록 (자동 \n)
+ *  - 수신: 자동 코얼레스 (변경시만 / 매번)
+ *  - hat 안에서 readUntil 강제 호출 안함 — 언제든 getReceived/hasNew 가능
+ *  - 파싱: split + 1-based 인덱스 (08·09와 동일)
  */
 
-//% weight=1030 color=#0079C1 icon="\uf294" block="10. Bluetooth"
-//% groups="['Web BLE']"
-namespace CommBlue {
+//% weight=1000 color=#007EF4 icon="" block="10. Bluetooth"
+//% groups="['Settings', 'Send', 'Receive', 'Parse']"
+namespace Bluetooth10 {
 
-    // Web BLE 상태 변수
-    let _webBLEConnected: boolean = false
-    let _webBLEBuffer: string = ""
-    let _webBLELastMsg: string = ""
-    let _webBLEMsgReady: boolean = false
-    let _webBLEParsedData: string[] = []
+    let _btConnected: boolean = false
+    let _btStarted: boolean = false
+    let _btLastMsg: string = ""
+    let _btPrevMsg: string = ""
+    let _btMsgReady: boolean = false
+    let _btMsgConsumed: boolean = true
+    let _btParsedData: string = ""
+    let _btParsedDelim: string = ","
+    let _btChangedHandler: (msg: string) => void = null
+    let _btAnyHandler: (msg: string) => void = null
+    let _btConnectedHandler: () => void = null
+    let _btDisconnectedHandler: () => void = null
 
-    /**
-     * Web BLE Setup Name
-     * Initialize built-in BLE and set name
-     */
-    //% block="Web BLE Setup Name %name"
-    //% name.defl="Brixel_BLE"
-    //% group="Web BLE" weight=100
-    export function webBLESetup(name: string): void {
-        // 블루투스 UART 서비스 시작
+    function _handleLine(raw: string): void {
+        if (!raw || raw.length === 0) return
+        let line = raw
+        if (line.charCodeAt(line.length - 1) === 13) {
+            line = line.substr(0, line.length - 1)
+        }
+        if (line.length === 0) return
+        _btLastMsg = line
+        if (_btAnyHandler) _btAnyHandler(line)
+        if (line !== _btPrevMsg) {
+            _btPrevMsg = line
+            _btMsgReady = true
+            _btMsgConsumed = false
+            if (_btChangedHandler) _btChangedHandler(line)
+        }
+    }
+
+    //% block="🔵 Bluetooth start"
+    //% group="Settings" weight=100
+    export function btStart(): void {
+        if (_btStarted) return
+        _btStarted = true
+
         bluetooth.startUartService()
 
-        // 이름 설정 (Console에서 설정 필요할 수 있음)
-        // MakeCode에서는 프로젝트 설정의 이름을 따르는 경우가 많지만, 
-        // 여기서 명시적으로 advertise 할 수 있는 방법은 제한적임.
-        // 하지만 UART 서비스 시작이 핵심.
-
-        // 연결 이벤트 핸들러
-        bluetooth.onBluetoothConnected(function () {
-            _webBLEConnected = true
+        bluetooth.onBluetoothConnected(() => {
+            _btConnected = true
+            if (_btConnectedHandler) _btConnectedHandler()
         })
 
-        bluetooth.onBluetoothDisconnected(function () {
-            _webBLEConnected = false
+        bluetooth.onBluetoothDisconnected(() => {
+            _btConnected = false
+            if (_btDisconnectedHandler) _btDisconnectedHandler()
         })
 
-        // 데이터 수신 핸들러 (Delimiter: NewLine)
-        bluetooth.onUartDataReceived(serial.delimiters(Delimiters.NewLine), function () {
+        bluetooth.onUartDataReceived(serial.delimiters(Delimiters.NewLine), () => {
             let data = bluetooth.uartReadUntil(serial.delimiters(Delimiters.NewLine))
-            _webBLELastMsg = data
-            _webBLEMsgReady = true
+            _handleLine(data)
         })
     }
 
-    /**
-     * Is Web BLE message available?
-     */
-    //% block="Is Web BLE message available?"
-    //% group="Web BLE" weight=99
-    export function webBLEAvailable(): boolean {
-        return _webBLEMsgReady
+    //% block="🔵 Bluetooth connected?"
+    //% group="Settings" weight=99
+    export function btIsConnected(): boolean {
+        return _btConnected
     }
 
-    /**
-     * Message received via Web BLE
-     */
-    //% block="Message received via Web BLE"
-    //% group="Web BLE" weight=98
-    export function webBLERead(): string {
-        _webBLEMsgReady = false
-        return _webBLELastMsg
+    //% block="🔵 on Bluetooth connected"
+    //% group="Settings" weight=98
+    export function onBtConnected(handler: () => void): void {
+        _btConnectedHandler = handler
+        btStart()
     }
 
-    /**
-     * Send content via Web BLE
-     */
-    //% block="Send %content via Web BLE"
-    //% group="Web BLE" weight=97
-    export function webBLEWrite(content: string): void {
-        bluetooth.uartWriteString(content + "\n")
+    //% block="🔵 on Bluetooth disconnected"
+    //% group="Settings" weight=97
+    export function onBtDisconnected(handler: () => void): void {
+        _btDisconnectedHandler = handler
+        btStart()
     }
 
-    /**
-     * Is Web BLE connected?
-     */
-    //% block="Is Web BLE connected?"
-    //% group="Web BLE" weight=96
-    export function webBLEConnected(): boolean {
-        return _webBLEConnected
+    //% block="📤 BT send %value"
+    //% value.defl="Hello"
+    //% group="Send" weight=96
+    export function btSend(value: string): void {
+        if (!_btStarted) btStart()
+        bluetooth.uartWriteString(value + "\n")
     }
 
-    /**
-     * Parse received Web BLE data by delimiter
-     */
-    //% block="Parse received Web BLE data by %delimiter"
-    //% delimiter.defl=","
-    //% group="Web BLE" weight=95
-    export function webBLEParse(delimiter: string): void {
-        _webBLEParsedData = _webBLELastMsg.split(delimiter)
-        // 빈 문자열 제거 및 공백 트리밍이 필요하다면 추가 로직 필요
-        // 여기서는 단순 split 사용
-        _webBLEMsgReady = false
+    //% block="📥 on BT message changed"
+    //% group="Receive" weight=95
+    //% draggableParameters
+    export function onBtMessageChanged(handler: (message: string) => void): void {
+        _btChangedHandler = handler
+        btStart()
     }
 
-    /**
-     * N-th parsed Web BLE value
-     */
-    //% block="%n -th parsed Web BLE value"
-    //% n.defl=1
-    //% group="Web BLE" weight=94
-    export function webBLEGetValue(n: number): string {
-        if (n <= 0 || n > _webBLEParsedData.length) {
-            return ""
+    //% block="📥 on BT message any"
+    //% group="Receive" weight=94
+    //% draggableParameters
+    export function onBtMessageAny(handler: (message: string) => void): void {
+        _btAnyHandler = handler
+        btStart()
+    }
+
+    //% block="📥 BT received value"
+    //% group="Receive" weight=93
+    export function btGetReceived(): string {
+        if (!_btStarted) btStart()
+        return _btLastMsg
+    }
+
+    //% block="📥 BT new message?"
+    //% group="Receive" weight=92
+    export function btHasNew(): boolean {
+        if (!_btStarted) btStart()
+        if (_btMsgReady && !_btMsgConsumed) {
+            _btMsgConsumed = true
+            return true
         }
-        return _webBLEParsedData[n - 1]
+        return false
+    }
+
+    //% block="🔍 BT parse received with %delimiter"
+    //% delimiter.defl=","
+    //% group="Parse" weight=91
+    export function btParse(delimiter: string): void {
+        _btParsedDelim = delimiter && delimiter.length > 0 ? delimiter : ","
+        _btParsedData = _btLastMsg
+    }
+
+    //% block="🔍 BT parsed %index th value"
+    //% index.defl=1 index.min=1
+    //% group="Parse" weight=90
+    export function btParsedGet(index: number): string {
+        if (!_btParsedData || _btParsedData.length === 0) return ""
+        let parts = _btParsedData.split(_btParsedDelim)
+        if (index < 1 || index > parts.length) return ""
+        return parts[index - 1]
     }
 }

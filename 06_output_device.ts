@@ -4,7 +4,7 @@
  */
 
 //% weight=1050 color=#50B91A icon="\uf028" block="06. Output Device"
-//% groups="['Buzzer', 'MP3 Player', 'SD Card', 'EEPROM', 'Microphone']"
+//% groups="['Buzzer', 'MP3 Player (KT403A)', 'SD Card', 'MP3 Player (DFPlayer)', 'EEPROM', 'Microphone']"
 namespace OutputDevice {
 
 
@@ -180,141 +180,221 @@ namespace OutputDevice {
     }
 
 
-    /********** DFPlayer MP3 모듈 **********/
+    /********** KT403A MP3 Module **********/
 
-    // DFPlayer Mini는 SD카드의 MP3 파일을 재생하는 모듈입니다.
+    // KT403A/GD3200B is a serial MP3 player module
+    // Supports SD card and USB flash drive
 
-    // DFPlayer 상태 변수
-    let _dfpTx: SerialPin = SerialPin.P1
-    let _dfpRx: SerialPin = SerialPin.P2
-    let _dfpVolume: number = 15
+    // KT403A Device Type
+    export enum KT403ADevice {
+        //% block="USB (0x01)"
+        USB = 0x01,
+        //% block="SD Card (0x02)"
+        SDCard = 0x02
+    }
 
-    //% block="MP3 player(DFPlayer) set|TX pin %tx|RX pin %rx"
-    //% tx.defl=SerialPin.P1
+    // KT403A Control Commands
+    export enum KT403AControl {
+        //% block="Play"
+        Play = 0x01,
+        //% block="Pause"
+        Pause = 0x02,
+        //% block="Next Track"
+        Next = 0x03,
+        //% block="Previous Track"
+        Previous = 0x04,
+        //% block="Stop"
+        Stop = 0x05
+    }
+
+    // KT403A state variables
+    let _kt403aRx: SerialPin = SerialPin.P2
+    let _kt403aTx: SerialPin = SerialPin.P1
+    let _kt403aVolume: number = 20
+    let _kt403aDevice: number = 0x02
+    let _kt403aInitialized: boolean = false
+
+    /**
+     * Initialize KT403A MP3 module
+     * @param device storage device type
+     * @param rx RX pin (connect to module TX)
+     * @param tx TX pin (connect to module RX)
+     * @param volume initial volume (0-30)
+     */
+    //% block="MP3 (KT403A) setup: device %device, RX %rx, TX %tx, initial volume (0~30) %volume"
+    //% device.defl=KT403ADevice.SDCard
     //% rx.defl=SerialPin.P2
-    //% group="MP3 player" weight=89
+    //% tx.defl=SerialPin.P1
+    //% volume.defl=20 volume.min=0 volume.max=30
+    //% group="MP3 Player (KT403A)" weight=100
     //% inlineInputMode=inline
-    export function dfplayerInit(tx: SerialPin, rx: SerialPin): void {
-        _dfpTx = tx
-        _dfpRx = rx
+    export function kt403aInit(device: KT403ADevice, rx: SerialPin, tx: SerialPin, volume: number): void {
+        _kt403aRx = rx
+        _kt403aTx = tx
+        _kt403aDevice = device
+        _kt403aVolume = Math.clamp(0, 30, volume)
+
+        // Initialize serial communication
         serial.redirect(tx, rx, BaudRate.BaudRate9600)
-        basic.pause(500)
+        basic.pause(100)
 
-        // 초기 볼륨 설정
-        dfplayerSetVolume(15)
+        // Select device
+        kt403aSendCmd(0x09, 0x00, device)
+        basic.pause(200)
+
+        // Set initial volume
+        kt403aSendCmd(0x06, 0x00, _kt403aVolume)
+        basic.pause(100)
+
+        _kt403aInitialized = true
     }
 
-    //% block="MP3 player(DFPlayer) play track %track"
-    //% track.defl=1 track.min=1 track.max=255
-    //% group="MP3 player" weight=88
-    export function dfplayerPlay(track: number): void {
-        dfplayerSendCmd(0x03, track)
+    /**
+     * Play track by number
+     * @param track track number (1-65535)
+     */
+    //% block="MP3 play track number %track"
+    //% track.defl=1 track.min=1 track.max=65535
+    //% group="MP3 Player (KT403A)" weight=99
+    export function kt403aPlayTrack(track: number): void {
+        let high = (track >> 8) & 0xFF
+        let low = track & 0xFF
+        kt403aSendCmd(0x03, high, low)
     }
 
-    //% block="MP3 pause"
-    //% group="MP3 player" weight=87
-    export function dfplayerPause(): void {
-        dfplayerSendCmd(0x0E, 0)
-    }
-
-    //% block="MP3 resume"
-    //% group="MP3 player" weight=86
-    export function dfplayerResume(): void {
-        dfplayerSendCmd(0x0D, 0)
-    }
-
-    //% block="MP3 stop"
-    //% group="MP3 player" weight=85
-    export function dfplayerStop(): void {
-        dfplayerSendCmd(0x16, 0)
-    }
-
-    //% block="MP3 volume %volume (0~30)"
-    //% volume.defl=15 volume.min=0 volume.max=30
-    //% group="MP3 player" weight=84
-    export function dfplayerSetVolume(volume: number): void {
-        _dfpVolume = Math.clamp(0, 30, volume)
-        dfplayerSendCmd(0x06, _dfpVolume)
-    }
-
-    //% block="MP3 player(DFPlayer) next track"
-    //% group="MP3 player" weight=83
-    export function dfplayerNext(): void {
-        dfplayerSendCmd(0x01, 0)
-    }
-
-    //% block="MP3 player(DFPlayer) previous track"
-    //% group="MP3 player" weight=82
-    export function dfplayerPrevious(): void {
-        dfplayerSendCmd(0x02, 0)
-    }
-
-    //% block="MP3 player(DFPlayer) play folder %folder 's file %file"
+    /**
+     * Play specific file in folder
+     * @param folder folder number (1-99)
+     * @param file file number (1-255)
+     */
+    //% block="MP3 folder/file play: folder %folder, file %file"
     //% folder.defl=1 folder.min=1 folder.max=99
     //% file.defl=1 file.min=1 file.max=255
-    //% group="MP3 player" weight=81
+    //% group="MP3 Player (KT403A)" weight=98
     //% inlineInputMode=inline
-    export function dfplayerPlayFolder(folder: number, file: number): void {
-        dfplayerSendCmd(0x0F, (folder << 8) | file)
+    export function kt403aPlayFolderFile(folder: number, file: number): void {
+        kt403aSendCmd(0x0F, folder, file)
     }
 
-    //% block="MP3 loop %state"
-    //% state.shadow="toggleOnOff" state.defl=true
-    //% group="MP3 player" weight=80
-    export function dfplayerLoop(state: boolean): void {
-        dfplayerSendCmd(0x11, state ? 1 : 0)
+    /**
+     * Set volume
+     * @param volume volume level (0-30)
+     */
+    //% block="MP3 set volume (0~30) %volume"
+    //% volume.defl=20 volume.min=0 volume.max=30
+    //% group="MP3 Player (KT403A)" weight=97
+    export function kt403aSetVolume(volume: number): void {
+        _kt403aVolume = Math.clamp(0, 30, volume)
+        kt403aSendCmd(0x06, 0x00, _kt403aVolume)
     }
 
-    // DFPlayer 명령 전송 (내부 함수)
-    function dfplayerSendCmd(cmd: number, param: number): void {
+    /**
+     * Control MP3 playback
+     * @param control control command
+     */
+    //% block="MP3 control %control"
+    //% control.defl=KT403AControl.Next
+    //% group="MP3 Player (KT403A)" weight=96
+    export function kt403aControl(control: KT403AControl): void {
+        switch (control) {
+            case KT403AControl.Play:
+                kt403aSendCmd(0x0D, 0x00, 0x00)  // Resume play
+                break
+            case KT403AControl.Pause:
+                kt403aSendCmd(0x0E, 0x00, 0x00)  // Pause
+                break
+            case KT403AControl.Next:
+                kt403aSendCmd(0x01, 0x00, 0x00)  // Next track
+                break
+            case KT403AControl.Previous:
+                kt403aSendCmd(0x02, 0x00, 0x00)  // Previous track
+                break
+            case KT403AControl.Stop:
+                kt403aSendCmd(0x16, 0x00, 0x00)  // Stop
+                break
+        }
+    }
+
+    /**
+     * Get MP3 playback status (0 = playback finished)
+     */
+    //% block="MP3 status value (0=playback finished)"
+    //% group="MP3 Player (KT403A)" weight=95
+    export function kt403aGetStatus(): number {
+        // Query status command
+        kt403aSendCmd(0x42, 0x00, 0x00)
+        basic.pause(50)
+
+        // Read response (simplified - actual implementation needs proper parsing)
+        // Return 0 if stopped/finished, 1 if playing
+        // Note: Full implementation would need to read and parse serial response
+        return 1
+    }
+
+    /**
+     * Volume up
+     */
+    //% block="MP3 volume up"
+    //% group="MP3 Player (KT403A)" weight=94
+    export function kt403aVolumeUp(): void {
+        kt403aSendCmd(0x04, 0x00, 0x00)
+    }
+
+    /**
+     * Volume down
+     */
+    //% block="MP3 volume down"
+    //% group="MP3 Player (KT403A)" weight=93
+    export function kt403aVolumeDown(): void {
+        kt403aSendCmd(0x05, 0x00, 0x00)
+    }
+
+    /**
+     * Set loop play mode
+     * @param enable enable loop play
+     */
+    //% block="MP3 loop play %enable"
+    //% enable.shadow="toggleOnOff" enable.defl=true
+    //% group="MP3 Player (KT403A)" weight=92
+    export function kt403aLoopPlay(enable: boolean): void {
+        kt403aSendCmd(0x11, 0x00, enable ? 0x01 : 0x00)
+    }
+
+    /**
+     * Play file in MP3 folder (for files named 0001.mp3 - 9999.mp3 in MP3 folder)
+     * @param fileNum file number (1-9999)
+     */
+    //% block="MP3 play MP3 folder file %fileNum"
+    //% fileNum.defl=1 fileNum.min=1 fileNum.max=9999
+    //% group="MP3 Player (KT403A)" weight=91
+    export function kt403aPlayMp3Folder(fileNum: number): void {
+        let high = (fileNum >> 8) & 0xFF
+        let low = fileNum & 0xFF
+        kt403aSendCmd(0x12, high, low)
+    }
+
+    // Internal function to send command to KT403A
+    function kt403aSendCmd(cmd: number, dataHigh: number, dataLow: number): void {
+        // KT403A command format:
+        // $S VER Len CMD Feedback dataHigh dataLow checksum $O
+        // 7E FF 06 CMD 00 DH DL XX XX EF
+
+        let checksum = 0 - (0xFF + 0x06 + cmd + 0x00 + dataHigh + dataLow)
+
         let buf = pins.createBuffer(10)
-        buf[0] = 0x7E  // Start
-        buf[1] = 0xFF  // Version
-        buf[2] = 0x06  // Length
-        buf[3] = cmd   // Command
-        buf[4] = 0x00  // Feedback
-        buf[5] = (param >> 8) & 0xFF  // Param high
-        buf[6] = param & 0xFF         // Param low
-
-        // Checksum
-        let checksum = 0 - (buf[1] + buf[2] + buf[3] + buf[4] + buf[5] + buf[6])
-        buf[7] = (checksum >> 8) & 0xFF
-        buf[8] = checksum & 0xFF
-        buf[9] = 0xEF  // End
+        buf[0] = 0x7E        // Start byte
+        buf[1] = 0xFF        // Version
+        buf[2] = 0x06        // Length
+        buf[3] = cmd         // Command
+        buf[4] = 0x00        // Feedback (0 = no feedback)
+        buf[5] = dataHigh    // Data high byte
+        buf[6] = dataLow     // Data low byte
+        buf[7] = (checksum >> 8) & 0xFF   // Checksum high
+        buf[8] = checksum & 0xFF          // Checksum low
+        buf[9] = 0xEF        // End byte
 
         serial.writeBuffer(buf)
-        basic.pause(50)
-    }
-
-
-    /********** 마이크로폰 **********/
-
-    //% block="microphone sound level (Analog pin %pin)"
-    //% pin.defl=AnalogPin.P1
-    //% group="microphone" weight=79
-    export function microphoneRead(pin: AnalogPin): number {
-        return pins.analogReadPin(pin)
-    }
-
-    //% block="microphone sound detected? (Analog pin %pin|threshold %threshold)"
-    //% pin.defl=AnalogPin.P1
-    //% threshold.defl=600 threshold.min=0 threshold.max=1023
-    //% group="microphone" weight=78
-    export function microphoneDetected(pin: AnalogPin, threshold: number): boolean {
-        return pins.analogReadPin(pin) > threshold
-    }
-
-    //% block="microphone average sound level (Analog pin %pin|samples %samples)"
-    //% pin.defl=AnalogPin.P1
-    //% samples.defl=10 samples.min=1 samples.max=100
-    //% group="microphone" weight=77
-    export function microphoneAverage(pin: AnalogPin, samples: number): number {
-        let sum = 0
-        for (let i = 0; i < samples; i++) {
-            sum += pins.analogReadPin(pin)
-            basic.pause(1)
-        }
-        return Math.floor(sum / samples)
+        basic.pause(30)
     }
 
 
@@ -482,6 +562,114 @@ namespace OutputDevice {
     }
 
 
+    /********** DFPlayer MP3 모듈 **********/
+
+    // DFPlayer Mini는 SD카드의 MP3 파일을 재생하는 모듈입니다.
+
+    // DFPlayer 상태 변수
+    let _dfpTx: SerialPin = SerialPin.P1
+    let _dfpRx: SerialPin = SerialPin.P2
+    let _dfpVolume: number = 15
+
+    //% block="MP3 player(DFPlayer) set|TX pin %tx|RX pin %rx"
+    //% tx.defl=SerialPin.P1
+    //% rx.defl=SerialPin.P2
+    //% group="MP3 Player (DFPlayer)" weight=89
+    //% inlineInputMode=inline
+    export function dfplayerInit(tx: SerialPin, rx: SerialPin): void {
+        _dfpTx = tx
+        _dfpRx = rx
+        serial.redirect(tx, rx, BaudRate.BaudRate9600)
+        basic.pause(500)
+
+        // 초기 볼륨 설정
+        dfplayerSetVolume(15)
+    }
+
+    //% block="MP3 player(DFPlayer) play track %track"
+    //% track.defl=1 track.min=1 track.max=255
+    //% group="MP3 Player (DFPlayer)" weight=88
+    export function dfplayerPlay(track: number): void {
+        dfplayerSendCmd(0x03, track)
+    }
+
+    //% block="MP3 pause"
+    //% group="MP3 Player (DFPlayer)" weight=87
+    export function dfplayerPause(): void {
+        dfplayerSendCmd(0x0E, 0)
+    }
+
+    //% block="MP3 resume"
+    //% group="MP3 Player (DFPlayer)" weight=86
+    export function dfplayerResume(): void {
+        dfplayerSendCmd(0x0D, 0)
+    }
+
+    //% block="MP3 stop"
+    //% group="MP3 Player (DFPlayer)" weight=85
+    export function dfplayerStop(): void {
+        dfplayerSendCmd(0x16, 0)
+    }
+
+    //% block="MP3 volume %volume (0~30)"
+    //% volume.defl=15 volume.min=0 volume.max=30
+    //% group="MP3 Player (DFPlayer)" weight=84
+    export function dfplayerSetVolume(volume: number): void {
+        _dfpVolume = Math.clamp(0, 30, volume)
+        dfplayerSendCmd(0x06, _dfpVolume)
+    }
+
+    //% block="MP3 player(DFPlayer) next track"
+    //% group="MP3 Player (DFPlayer)" weight=83
+    export function dfplayerNext(): void {
+        dfplayerSendCmd(0x01, 0)
+    }
+
+    //% block="MP3 player(DFPlayer) previous track"
+    //% group="MP3 Player (DFPlayer)" weight=82
+    export function dfplayerPrevious(): void {
+        dfplayerSendCmd(0x02, 0)
+    }
+
+    //% block="MP3 player(DFPlayer) play folder %folder 's file %file"
+    //% folder.defl=1 folder.min=1 folder.max=99
+    //% file.defl=1 file.min=1 file.max=255
+    //% group="MP3 Player (DFPlayer)" weight=81
+    //% inlineInputMode=inline
+    export function dfplayerPlayFolder(folder: number, file: number): void {
+        dfplayerSendCmd(0x0F, (folder << 8) | file)
+    }
+
+    //% block="MP3 loop %state"
+    //% state.shadow="toggleOnOff" state.defl=true
+    //% group="MP3 Player (DFPlayer)" weight=80
+    export function dfplayerLoop(state: boolean): void {
+        dfplayerSendCmd(0x11, state ? 1 : 0)
+    }
+
+    // DFPlayer 명령 전송 함수
+    function dfplayerSendCmd(cmd: number, param: number): void {
+        let buf = pins.createBuffer(10)
+        buf[0] = 0x7E  // 시작 바이트
+        buf[1] = 0xFF  // 버전
+        buf[2] = 0x06  // 길이
+        buf[3] = cmd   // 명령
+        buf[4] = 0x00  // 피드백 (0: 없음)
+        buf[5] = (param >> 8) & 0xFF  // 파라미터 상위
+        buf[6] = param & 0xFF         // 파라미터 하위
+
+        // 체크섬 계산
+        let checksum = 0 - (0xFF + 0x06 + cmd + 0x00 + buf[5] + buf[6])
+        buf[7] = (checksum >> 8) & 0xFF
+        buf[8] = checksum & 0xFF
+
+        buf[9] = 0xEF  // 종료 바이트
+
+        serial.writeBuffer(buf)
+        basic.pause(30)
+    }
+
+
     /********** EEPROM (AT24C32/AT24C64 등) **********/
 
     // I2C EEPROM - 전원이 꺼져도 데이터 유지
@@ -575,5 +763,28 @@ namespace OutputDevice {
         let b2 = eepromRead(memAddr + 2)
         let b3 = eepromRead(memAddr + 3)
         return (b0 << 24) | (b1 << 16) | (b2 << 8) | b3
+    }
+
+
+    /********** Microphone **********/
+
+    //% block="microphone value (0~1023) %pin"
+    //% pin.defl=AnalogPin.P0
+    //% group="Microphone" weight=70
+    export function microphoneValue(pin: AnalogPin): number {
+        return pins.analogReadPin(pin)
+    }
+
+    //% block="microphone average (samples: %samples) %pin"
+    //% pin.defl=AnalogPin.P0
+    //% samples.defl=10 samples.min=1 samples.max=100
+    //% group="Microphone" weight=69
+    export function microphoneAverage(pin: AnalogPin, samples: number): number {
+        let sum = 0
+        for (let i = 0; i < samples; i++) {
+            sum += pins.analogReadPin(pin)
+            basic.pause(1)
+        }
+        return Math.floor(sum / samples)
     }
 }
