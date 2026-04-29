@@ -1,6 +1,6 @@
 {
     "name": "brixel-ext",
-    "version": "2.3.0",
+    "version": "0.0.3",
     "description": "BRIXEL Extension - Supports 100+ sensors, actuators, displays & communication devices",
     "license": "MIT",
     "author": "BRIXEL",
